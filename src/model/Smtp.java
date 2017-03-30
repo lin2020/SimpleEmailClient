@@ -49,6 +49,18 @@ public class Smtp {
         }
     }
 
+    public void sendEmail(String from, String to) {
+        try {
+            //sendAndCheck();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void quit() {
+        sendAndCheck("QUIT", "221");
+    }
+
     private void sendAndCheck(String cmd, String status) {
         try {
             out_to_server.print(cmd + "\r\n");
@@ -63,7 +75,5 @@ public class Smtp {
             e.printStackTrace();
         }
     }
-
-    
 
 }
