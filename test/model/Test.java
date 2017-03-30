@@ -1,11 +1,12 @@
-package view;
+package test.lin.model;
 
 import java.util.*;
-import bean.*;
-import model.*;
-import util.*;
 
-public class Login {
+import com.lin.bean.*;
+import com.lin.model.*;
+import com.lin.util.*;
+
+public class Test {
 
     public static void main(String[] args) {
         User user = new User(0, "lin", "15172323141@163.com", "lin2020");

@@ -1,4 +1,4 @@
-package bean;
+package com.lin.bean;
 
 import java.util.*;
 
@@ -6,7 +6,7 @@ public class Email {
     private String theme = "";
     private String from = "";
     private Vector<String> to_list;
-    private String data = "";
+    private String content = "";
 
     // create email by server response
     public Email(Vector<String> lines) {
@@ -15,12 +15,12 @@ public class Email {
     }
 
     // create email by client input
-	public Email(String theme, String from, Vector<String> to_list, String data) {
+	public Email(String theme, String from, Vector<String> to_list, String content) {
 		super();
 		this.theme = theme;
 		this.from = from;
 		this.to_list = to_list;
-		this.data = data;
+		this.content = content;
 	}
 
 	public String getTheme() {
@@ -47,23 +47,23 @@ public class Email {
 		this.to_list = to_list;
 	}
 
-	public String getData() {
-		return data;
+	public String getContent() {
+		return content;
 	}
 
-	public void setData(String data) {
-		this.data = data;
+	public void setContent(String content) {
+		this.content = content;
 	}
 
 	@Override
 	public String toString() {
         String to = "";
         for (String to_item : to_list) {
-            to = to + to_item + ";";
+            to += to_item + ";";
         }
 		return "Theme: " + theme + "\r\n" +
                 "From: " + from + "\r\n" +
                 "To_list: " + to + "\r\n" +
-                "Content:" + data + "\r\n";
+                "Content:" + content + "\r\n";
 	}
 }

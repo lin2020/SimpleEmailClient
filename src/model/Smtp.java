@@ -1,4 +1,4 @@
-package model;
+package com.lin.model;
 
 import java.util.*;
 import java.net.Socket;
@@ -7,7 +7,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 
-import util.*;
+import com.lin.util.*;
 
 public class Smtp {
     private static final int SMTP_PORT = 25;
@@ -42,8 +42,8 @@ public class Smtp {
             // connect and login
             sendAndCheck("HELO " + email_addr, "250");
             sendAndCheck("AUTH LOGIN", "334");
-            sendAndCheck(MyBase64.encode(email_addr), "334");
-            sendAndCheck(MyBase64.encode(email_pass), "235");
+            sendAndCheck(CoderUtil.encode(email_addr), "334");
+            sendAndCheck(CoderUtil.encode(email_pass), "235");
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -1,4 +1,4 @@
-package model;
+package com.lin.model;
 
 import java.util.*;
 import java.net.Socket;
@@ -7,7 +7,7 @@ import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.io.IOException;
 
-import util.*;
+import com.lin.util.*;
 
 public class Pop3 {
     private static final int POP_PORT = 110;

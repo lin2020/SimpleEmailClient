@@ -1,4 +1,4 @@
-package util;
+package com.lin.util;
 
 public class LogUtil {
     public static final int VERBOSE = 1;

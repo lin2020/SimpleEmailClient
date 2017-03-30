@@ -1,4 +1,4 @@
-package bean;
+package com.lin.bean;
 import java.util.*;
 
 public class User {
@@ -6,10 +6,6 @@ public class User {
     private String name = "";
     private String email_addr = "";
     private String email_pass = "";
-
-    public User() {
-        super();
-    }
 
 	public User(Integer id, String name, String email_addr, String email_pass) {
 		super();
