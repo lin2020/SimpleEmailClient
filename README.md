@@ -3,7 +3,7 @@
 ## Intro
 A simple email client written in Java. Using smtp and imap without JavaMail.
 
-## Mail Protocol
+## Support
 * SMTP
 * POP3
 * IMAP
