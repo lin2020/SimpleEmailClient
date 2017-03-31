@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 
+import com.lin.bean.*;
 import com.lin.util.*;
 
 public class Smtp {
@@ -49,9 +50,14 @@ public class Smtp {
         }
     }
 
-    public void sendEmail(String from, String to) {
+    public void sendEmail(Email email) {
         try {
-            //sendAndCheck();
+            for (String to : email.getTo_list()) {
+                sendAndCheck("MAIL FROM: <" + user_addr + ">", "250");
+                sendAndCheck("RCPT TO: <" + to + ">", "250");
+                sendAndCheck("DATA", "354");
+                sendAndCheck(email.getContent(), "250");
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -68,8 +74,8 @@ public class Smtp {
             response = in_from_server.readLine();
             LogUtil.i("Client: " + cmd);
             LogUtil.i("Server: " + response);
-            if (!status.equals(response.substring(0,3))) {
-                LogUtil.e("Connect Failed!");
+            if (!status.equals(response.substring(0, 3))) {
+                LogUtil.e("Failed! " + "Excepted" + status + "; Received" + response.substring(0, 3));
             }
         } catch (Exception e) {
             e.printStackTrace();
