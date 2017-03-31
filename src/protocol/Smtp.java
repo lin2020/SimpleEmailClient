@@ -1,4 +1,4 @@
-package com.lin.model;
+package com.lin.protocol;
 
 import java.util.*;
 import java.net.Socket;
@@ -11,7 +11,9 @@ import com.lin.bean.*;
 import com.lin.util.*;
 
 public class Smtp {
-    private static final int SMTP_PORT = 25;
+    private static final int SMTP_WITH_SSL = 465;
+    private static final int SMTP_WITHOUT_SSL = 25;
+    private static final int SMTP_PORT = SMTP_WITHOUT_SSL;
     private String smtp_server = "";
     private String user_addr = "";
     private String user_pass = "";

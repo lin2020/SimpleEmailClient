@@ -1,4 +1,4 @@
-package com.lin.model;
+package com.lin.protocol;
 
 import java.util.*;
 import java.net.Socket;
@@ -10,7 +10,9 @@ import java.io.IOException;
 import com.lin.util.*;
 
 public class Pop3 {
-    private static final int POP_PORT = 110;
+    private static final int POP_WITH_SSL = 995;
+    private static final int POP_WITHOUT_SSL = 110;
+    private static final int POP_PORT = POP_WITHOUT_SSL;
     private String pop_server = "";
     private String user_addr = "";
     private String user_pass = "";
