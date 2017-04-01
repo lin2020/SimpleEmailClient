@@ -30,7 +30,7 @@ java -cp bin test.lin.protocol.Pop3Test
 ```
 
 ## More
-To be continued
+To be continued...
 
 ## License
 MIT
