@@ -14,15 +14,15 @@ The email client supports storage of local mail, using sqlite-jdbc.
 ## Build
 You can download the project and build it on your _windows_ operating system and run it to send and receive email.
 #### `frame`
-The code sources include folders, _src_ folder and _test_ folder.
-- __`src`__ - Contains five folders that hold different classes of functions
+The code sources include folders, _com_ folder and _test_ folder.
+- __`com`__ - Contains five folders that hold different classes of functions
 - __`test`__ - Contains test units that used to test each functional class in src folders
 
 #### `compile`
 For each class, there is a test class for unit test. You can compile a class and then compile its test class and run test program to see how it work.For example:
 ``` cmd
-// compile a src class
-javac -d bin -cp bin src/protocol/Pop3.java
+// compile a com class
+javac -d bin -cp bin com/protocol/Pop3.java
 // compile a test class
 javac -d bin -cp bin test/protocol/Pop3Test.java
 // run a test program
