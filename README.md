@@ -8,7 +8,7 @@ The email client supports three mail protocols to send and receive email.
 - __`IMAP`__ - A powerful mail access protocol, pull emails from server, can sync local operations to the server.
 - __`SMTP`__ - Push emails to server, transfer mail from source address to destination address.
 
-#### `sqlite-jdbc`
+#### `database`
 The email client supports storage of local mail, using sqlite-jdbc.
 
 ## Build
