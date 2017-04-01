@@ -3,10 +3,10 @@
 ## Intro
 A simple email client written in Java. Its features include sending and receiving mail and storage of local mail.
 #### `mail protocol`
-The email client supports three mail protocols to send and receive email:
-- __`POP3`__ - A simple mail access protocol, pull emails from server
-- __`IMAP`__ - A powerful mail access protocol, Pull emails from server
-- __`SMTP`__ - Push emails to server
+The email client supports three mail protocols to send and receive email.
+- __`POP3`__ - A simple mail access protocol, pull emails from server, but local operations are not sync to the server.
+- __`IMAP`__ - A powerful mail access protocol, pull emails from server, can sync local operations to the server.
+- __`SMTP`__ - Push emails to server, transfer mail from source address to destination address.
 
 #### `sqlite-jdbc`
 The email client supports storage of local mail, using sqlite-jdbc.
@@ -19,6 +19,15 @@ The code sources include folders, _src_ folder and _test_ folder.
 - __`test`__ - Contains test units that used to test each functional class in src folders
 
 #### `compile`
+For each class, there is a test class for unit test. You can compile a class and then compile its test class and run test program to see how it work.For example:
+``` cmd
+// compile a src class
+javac -d bin -cp bin src/protocol/Pop3.java
+// compile a test class
+javac -d bin -cp bin test/protocol/Pop3Test.java
+// run a test program
+java -cp bin test.lin.protocol.Pop3Test
+```
 
 ## More
 To be continued
