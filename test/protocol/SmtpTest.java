@@ -2,7 +2,7 @@ package test.lin.protocol;
 
 import java.util.*;
 
-import com.lin.bean.*;
+import com.lin.model.*;
 import com.lin.protocol.*;
 import com.lin.util.*;
 

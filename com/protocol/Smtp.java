@@ -7,7 +7,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 
-import com.lin.bean.*;
+import com.lin.model.*;
 import com.lin.util.*;
 
 public class Smtp {
