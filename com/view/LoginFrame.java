@@ -12,8 +12,11 @@ import com.lin.util.*;
 public class LoginFrame {
 
     private JFrame frame;
-    private JTextField textField;
-    private JTextField textField2;
+    private JTextField addr_text;
+    private JTextField pass_text;
+    private JButton login_button;
+    private static String addr_hint = "email address";
+    private static String pass_hint = "email password";
 
     public LoginFrame() {
         initComponents();
@@ -27,63 +30,73 @@ public class LoginFrame {
         JPanel mainPanel = new JPanel();
         mainPanel.setBackground(Color.white);
         mainPanel.setLayout(null);
-        // mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
-        // Font font = new Font("宋体", Font.PLAIN, 14);
-        textField = new JTextField();
-        textField.setBounds(100, 100, 300, 24);
-        // textField.setFont(font);
+        addr_text = new JTextField(addr_hint);
+        addr_text.setBounds(100, 75, 200, 24);
+        addr_text.setForeground(Color.LIGHT_GRAY);
+        addr_text.setMargin(new Insets(3, 3, 3, 3));
 
-        textField2 = new JTextField();
-        textField2.setBounds(100, 140, 300, 24);
+        pass_text = new JTextField(pass_hint);
+        pass_text.setBounds(100, 110, 200, 24);
+        pass_text.setForeground(Color.LIGHT_GRAY);
+        pass_text.setMargin(new Insets(3, 3, 3, 3));
 
-        mainPanel.add(textField);
-        mainPanel.add(textField2);
+        login_button = new JButton("Login");
+        login_button.setBounds(100, 170, 200, 24);
+
+        mainPanel.add(addr_text);
+        mainPanel.add(pass_text);
+        mainPanel.add(login_button);
 
         frame.getContentPane().add(BorderLayout.CENTER, mainPanel);
-        frame.setSize(500, 500);
+        frame.setSize(400, 300);
+        frame.setResizable(false);
         frame.setVisible(true);
     }
 
     private void initEvents() {
 
-        textField.addFocusListener(new FocusListener() {
+        addr_text.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
-                LogUtil.i("gain");
-                // textField.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED,Color.red,Color.blue));
+                LogUtil.i("addr gain");
+                addr_text.setForeground(Color.blue);
+                if (addr_text.getText().equals(addr_hint)) {
+                    addr_text.setText(null);
+                }
             }
+
             @Override
             public void focusLost(FocusEvent e) {
-                LogUtil.i("lost");
-                textField.setBorder(BorderFactory.createLineBorder(new Color(0, 255, 51)));
+                LogUtil.i("addr lost");
+                if (addr_text.getText().trim().isEmpty()) {
+                    addr_text.setText(addr_hint);
+                    addr_text.setForeground(Color.LIGHT_GRAY);
+                }
             }
         });
 
-        // textField.addMouseListener(new MouseListener() {
-        //     @Override
-        //     public void mouseClicked(MouseEvent e) {
-        //         LogUtil.i("Clicked");
-        //     }
-        //     @Override
-        //     public void mousePressed(MouseEvent e) {
-        //         LogUtil.i("Pressed");
-        //     }
-        //     @Override
-        //     public void mouseReleased(MouseEvent e) {
-        //         LogUtil.i("Released");
-        //     }
-        //     @Override
-        //     public void mouseEntered(MouseEvent e) {
-        //         LogUtil.i("Entered");
-        //     }
-        //     @Override
-        //     public void mouseExited(MouseEvent e) {
-        //         LogUtil.i("Exited");
-        //     }
-        // });
+        pass_text.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                LogUtil.i("pass gain");
+                pass_text.setForeground(Color.blue);
+                if (pass_text.getText().equals(pass_hint)) {
+                    pass_text.setText(null);
+                }
+            }
 
-        textField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (pass_text.getText().trim().isEmpty()) {
+                    pass_text.setText(pass_hint);
+                    pass_text.setForeground(Color.LIGHT_GRAY);
+                }
+            }
+
+        });
+
+        addr_text.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
                 LogUtil.i("insert");
