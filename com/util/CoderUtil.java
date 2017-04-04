@@ -3,7 +3,7 @@ import sun.misc.*;
 
 public class CoderUtil {
 
-    // encode s using utf-8
+    // change s to utf-8
     public static String toUTF8(String s) {
         try {
             byte[] buf = s.getBytes();

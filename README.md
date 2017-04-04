@@ -28,9 +28,9 @@ javac -d bin -cp bin test/protocol/Pop3Test.java
 // run a test program
 java -cp bin test.lin.protocol.Pop3Test
 ```
-When the Chinese characters appear in the code. If you compile an error, you should add compilation options _-encoding utf-8_. For example:
+At compile time, if we do not use the -encoding parameter to specify the encoding format of our JAVA source code, javac.exe will get our operating system default encoding format. In _windows_, the default encoding format is _-encoding gbk*_. IF the encoding format of our JAVA source code is not _-encoding gbk*_, we should use the -encoding parameter to specify it. For example:
 ``` cmd
-// compile a com class with compilation options -encoding utf-8
+// compile a code file encoded with _utf-8_
 javac -encoding utf-8 -d bin -cp bin com/view/LoginFrame.java
 ```
 
