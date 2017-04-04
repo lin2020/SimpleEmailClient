@@ -31,7 +31,7 @@ java -cp bin test.lin.protocol.Pop3Test
 When the Chinese characters appear in the code. If you compile an error, you should add compilation options _-encoding utf-8_. For example:
 ``` cmd
 // compile a com class with compilation options -encoding utf-8
-javac -encoding utf-8 -d bin -cp bin com/protocol/Pop3.java
+javac -encoding utf-8 -d bin -cp bin com/view/LoginFrame.java
 ```
 
 ## More
