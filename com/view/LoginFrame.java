@@ -15,8 +15,9 @@ public class LoginFrame {
     private JTextField addr_text;
     private JTextField pass_text;
     private JButton login_button;
-    private static String addr_hint = "email address";
-    private static String pass_hint = "email password";
+    private String addr_hint = "email address";
+    private String pass_hint = "email password";
+    private String login_hint = CoderUtil.toUTF8("登录");
 
     public LoginFrame() {
         initComponents();
@@ -24,8 +25,7 @@ public class LoginFrame {
     }
 
     private void initComponents() {
-
-        frame = new JFrame("Login");
+        frame = new JFrame(login_hint);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         JPanel mainPanel = new JPanel();
         mainPanel.setBackground(Color.white);
@@ -41,7 +41,7 @@ public class LoginFrame {
         pass_text.setForeground(Color.LIGHT_GRAY);
         pass_text.setMargin(new Insets(3, 3, 3, 3));
 
-        login_button = new JButton("Login");
+        login_button = new JButton(login_hint);
         login_button.setBounds(100, 170, 200, 24);
 
         mainPanel.add(addr_text);
