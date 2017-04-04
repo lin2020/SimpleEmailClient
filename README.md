@@ -19,7 +19,7 @@ The code sources include folders, _com_ folder and _test_ folder.
 - __`test`__ - Contains test units that used to test each functional class in src folders
 
 #### `compile`
-For each class, there is a test class for unit test. You can compile a class and then compile its test class and run test program to see how it work.For example:
+For each class, there is a test class for unit test. You can compile a class and then compile its test class and run test program to see how it work. For example:
 ``` cmd
 // compile a com class
 javac -d bin -cp bin com/protocol/Pop3.java
@@ -27,6 +27,11 @@ javac -d bin -cp bin com/protocol/Pop3.java
 javac -d bin -cp bin test/protocol/Pop3Test.java
 // run a test program
 java -cp bin test.lin.protocol.Pop3Test
+```
+When the Chinese characters appear in the code. If you compile an error, you should add compilation options _-encoding utf-8_. For example:
+``` cmd
+// compile a com class with compilation options -encoding utf-8
+javac -encoding utf-8 -d bin -cp bin com/protocol/Pop3.java
 ```
 
 ## More

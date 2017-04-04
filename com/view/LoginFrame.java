@@ -17,7 +17,7 @@ public class LoginFrame {
     private JButton login_button;
     private String addr_hint = "email address";
     private String pass_hint = "email password";
-    private String login_hint = CoderUtil.toUTF8("登录");
+    private String login_hint = "登录";
 
     public LoginFrame() {
         initComponents();
