@@ -9,8 +9,7 @@ import com.lin.util.*;
 public class Pop3Test {
 
     public static void main(String[] args) {
-        // 163 mail pop3/smtp server
-        // User user = new User(0, "lin", "15172323141@163.com", "lin2020");
+        // sohu mail user
         User user = new User(0, "lin", "abc_2020@sohu.com", "abc2020");
 
         // test pop3 function

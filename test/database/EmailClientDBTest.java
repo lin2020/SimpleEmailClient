@@ -40,7 +40,7 @@ public class EmailClientDBTest {
         // load driver
         Class.forName("org.sqlite.JDBC");
 
-        // create
+        // create database
         EmailClientDB emailClientDB = EmailClientDB.getInstance();
 
         // * test user
