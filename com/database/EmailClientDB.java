@@ -47,16 +47,11 @@ public class EmailClientDB {
 		Connection connection = null;
 		try {
 			connection = DriverManager.getConnection(db_name);
-			// Statement statement = connection.createStatement();
-			// statement.setQueryTimeout(30);
 			PreparedStatement pre;
 			pre = connection.prepareStatement("create table if not exists user (id integer primary key autoincrement, name String, email_addr String, email_pass String)");
 			pre.executeUpdate();
-			pre = connection.prepareStatement("create table if not exists email (id integer primary key autoincrement, userid integer, inbox String, theme String, from_addr String, to_addr String, content String)");
+			pre = connection.prepareStatement("create table if not exists email (uidl String, userid integer, inbox String, theme String, from_addr String, to_addr String, content String)");
 			pre.executeUpdate();
-			// statement.executeUpdate("drop table if exists user");
-			// statement.executeUpdate("create table if not exists user (id integer, name String, email_addr String, email_pass String)");
-			// statement.executeUpdate("create table if not exists email (userid integer, inbox String, theme String, from_addr String, to_addr String, head String, content String)");
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -190,12 +185,12 @@ public class EmailClientDB {
 			ResultSet rs = pre.executeQuery();
 			while (rs.next()) {
 				Email email = new Email();
+				email.setUidl(rs.getString("uidl"));
 				email.setUserid(rs.getInt("userid"));
 				email.setInbox(rs.getString("inbox"));
 				email.setTheme(rs.getString("theme"));
 				email.setFrom(rs.getString("from_addr"));
 				email.setContent(rs.getString("content"));
-				// email.setTo_list(rs.getString("email_pass"));
 				list.add(email);
 				LogUtil.i("Load email");
 			}
@@ -218,16 +213,15 @@ public class EmailClientDB {
 		Connection connection = null;
 		try {
 			connection = DriverManager.getConnection(db_name);
-			PreparedStatement pre = connection.prepareStatement("insert into email values(null, ?, ?, ?, ?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
-			pre.setInt(1, email.getUserid());
-			pre.setString(2, email.getInbox());
-			pre.setString(3, email.getTheme());
-			pre.setString(4, email.getFrom());
-			// default null mean is the user_addr
-			pre.setString(5, null);
-			pre.setString(6, email.getContent());
+			PreparedStatement pre = connection.prepareStatement("insert into email values(?, ?, ?, ?, ?, ?, ?)");
+			pre.setString(1, email.getUidl());
+			pre.setInt(2, email.getUserid());
+			pre.setString(3, email.getInbox());
+			pre.setString(4, email.getTheme());
+			pre.setString(5, email.getFrom());
+			pre.setString(6, null);
+			pre.setString(7, email.getContent());
 			pre.executeUpdate();
-			email.setId(pre.getGeneratedKeys().getInt(1));
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -246,8 +240,8 @@ public class EmailClientDB {
 		Connection connection = null;
 		try {
 			connection = DriverManager.getConnection(db_name);
-			PreparedStatement pre = connection.prepareStatement("delete from email where id = ?");
-			pre.setInt(1, email.getId());
+			PreparedStatement pre = connection.prepareStatement("delete from email where uidl = ?");
+			pre.setString(1, email.getUidl());
 			pre.executeUpdate();
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -19,18 +19,21 @@ public class EmailClientDBTest {
         // email
         List<Email> emails = new ArrayList<Email>();
         Email email1 = new Email();
+        email1.setUidl("170401.s");
         email1.setUserid(1);
         email1.setInbox("inbox");
         email1.setTheme("hello");
         email1.setFrom("wangyi");
         email1.setContent("hello world");
         Email email2 = new Email();
+        email2.setUidl("170401.ss");
         email2.setUserid(2);
         email2.setInbox("trash");
         email2.setTheme("hi");
         email2.setFrom("ali");
         email2.setContent("hi world");
         Email email3 = new Email();
+        email3.setUidl("170401.sss");
         email3.setUserid(1);
         email3.setInbox("inbox");
         email3.setTheme("helo");
@@ -73,17 +76,17 @@ public class EmailClientDBTest {
         emailClientDB.insertEmail(email3);
         emails = emailClientDB.loadEmails(1, "inbox");
         for (Email e : emails) {
-            LogUtil.i("Userid = " + e.getUserid() + " Inbox = " + e.getInbox() + " Theme = " + e.getTheme());
+            LogUtil.i("Uidl = " + e.getUidl() + " Userid = " + e.getUserid() + " Inbox = " + e.getInbox() + " Theme = " + e.getTheme());
         }
         emails = emailClientDB.loadEmails(2, "trash");
         for (Email e : emails) {
-            LogUtil.i("Userid = " + e.getUserid() + " Inbox = " + e.getInbox() + " Theme = " + e.getTheme());
+            LogUtil.i("Uidl = " + e.getUidl() + " Userid = " + e.getUserid() + " Inbox = " + e.getInbox() + " Theme = " + e.getTheme());
         }
         // delete
         emailClientDB.deleteEmail(email3);
         emails = emailClientDB.loadEmails(1, "inbox");
         for (Email e : emails) {
-            LogUtil.i("Userid = " + e.getUserid() + " Inbox = " + e.getInbox() + " Theme = " + e.getTheme());
+            LogUtil.i("Uidl = " + e.getUidl() + " Userid = " + e.getUserid() + " Inbox = " + e.getInbox() + " Theme = " + e.getTheme());
         }
     }
 }

@@ -1,9 +1,13 @@
 package com.lin.model;
 
 import java.util.*;
+import java.util.regex.*;
+
+import com.lin.util.*;
+import com.lin.model.*;
 
 public class Email {
-    private Integer id;
+    private String uidl = "";
     private Integer userid;
     private String inbox = "";
     private String theme = "";
@@ -11,8 +15,9 @@ public class Email {
     private Vector<String> to_list;
     private String content = "";
 
-    public Email() {
+    public Email(User user, Vector<String> response) {
         super();
+        init(user, response);
     }
 
 	public Email(String theme, String from, Vector<String> to_list, String content) {
@@ -35,12 +40,65 @@ public class Email {
                 "Content:" + content + "\r\n";
 	}
 
-    public Integer getId() {
-        return id;
+    private void init(User user, Vector<String> response) {
+        String email_regex = "(\\w)+(\\.\\w+)*@(\\w)+((\\.\\w+)+)";
+        String subject_regex = "[B][?].+?[?][=]";
+        boolean is_content_text = false;
+        boolean is_content_type = false;
+        boolean get_content = false;
+        for (String line : response) {
+            if (line.startsWith("From:")) {
+                Pattern p = Pattern.compile(email_regex);
+                Matcher m = p.matcher(line);
+                if (m.find()) {
+                    LogUtil.i(m.group());
+                    from = m.group();
+                }
+            } else if (line.startsWith("To:")) {
+                Pattern p = Pattern.compile(email_regex);
+                Matcher m = p.matcher(line);
+                to_list = new Vector<String>();
+                while (m.find()) {
+                    LogUtil.i(m.group());
+                    to_list.addElement(m.group());
+                }
+            } else if (line.startsWith("Subject:")) {
+                Pattern p = Pattern.compile(subject_regex);
+                Matcher m = p.matcher(line);
+                if (m.find()) {
+                    String subject = m.group().substring(2, m.group().length() - 2);
+                    LogUtil.i(subject);
+                    theme = CoderUtil.decode(subject);
+                }
+            } else if (line.startsWith("------")) {
+                is_content_text = false;
+                get_content = false;
+            } else if (line.startsWith("Content-Type:")) {
+                if (line.contains("text/plain")) {
+                    is_content_type = true;
+                } else {
+                    is_content_type = false;
+                }
+            } else if (line.endsWith("base64")) {
+                is_content_text = true;
+            }
+
+            if (is_content_text && is_content_type) {
+                if (!get_content) {
+                    get_content = true;
+                } else {
+                    content += CoderUtil.decode(line);
+                }
+            }
+        }
     }
 
-    public void setId(Integer id) {
-        this.id = id;
+    public String getUidl() {
+        return uidl;
+    }
+
+    public void setUidl(String uidl) {
+        this.uidl = uidl;
     }
 
     public Integer getUserid() {
