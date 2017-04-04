@@ -15,7 +15,9 @@ public class SmtpTest {
         // email to be send
         Vector<String> to_list = new Vector<String>();
         to_list.addElement(user.getEmail_addr());
-        Email email = new Email("hello", user.getEmail_addr(), to_list, "hello\r\n.");
+        to_list.addElement("1579084272@qq.com");
+        to_list.addElement("523067817@qq.com");
+        Email email = new Email("hello", user.getEmail_addr(), to_list, "helo, i am linjiadong.");
 
         // test smtp function
         Smtp smtp = new Smtp("smtp.sohu.com", user.getEmail_addr(), user.getEmail_pass());

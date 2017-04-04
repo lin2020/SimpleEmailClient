@@ -15,9 +15,22 @@ public class Pop3Test {
         // test pop3 function
         Pop3 pop = new Pop3("pop.sohu.com", user.getEmail_addr(), user.getEmail_pass());
         pop.list();
-        pop.retr(pop.size());
-        pop.dele(pop.size());
+        Vector<String> response = pop.retr(1);
+        // pop.dele(pop.size());
         pop.quit();
+        
+        // test email info
+        Email email = new Email(user, response);
+        LogUtil.i("---------------begin");
+        LogUtil.i("From: " + email.getFrom());
+        LogUtil.i("To_List: ");
+        for (String s : email.getTo_list()) {
+            LogUtil.i(s);
+        }
+        LogUtil.i("Subject: " + email.getTheme());
+        LogUtil.i("Content:");
+        LogUtil.i(email.getContent());
+        LogUtil.i("---------------end");
     }
 
 }

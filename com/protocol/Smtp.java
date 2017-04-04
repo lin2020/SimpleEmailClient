@@ -54,12 +54,25 @@ public class Smtp {
 
     public void sendEmail(Email email) {
         try {
+            sendAndCheck("MAIL FROM: <" + user_addr + ">", "250");
             for (String to : email.getTo_list()) {
-                sendAndCheck("MAIL FROM: <" + user_addr + ">", "250");
                 sendAndCheck("RCPT TO: <" + to + ">", "250");
-                sendAndCheck("DATA", "354");
-                sendAndCheck(email.getContent(), "250");
             }
+            sendAndCheck("DATA", "354");
+            String content = "FROM: " + user_addr + "\n";
+            for (String to : email.getTo_list()) {
+                content += "TO: " + to + "\n";
+            }
+            content += "SUBJECT: " + email.getTheme() + "\n";
+            content += "\n" + email.getContent() + "\n" + "\n" + ".";
+            // String content = "FROM: " + user_addr + "\n" +
+            //                 "TO: " + to + "\n" +
+            //                 "SUBJECT: " + email.getTheme() + "\n" +
+            //                 "\n" +
+            //                 email.getContent() + "\n" +
+            //                 "\n" +
+            //                 ".";
+            sendAndCheck(content, "250");
         } catch (Exception e) {
             e.printStackTrace();
         }
