@@ -30,7 +30,7 @@ java -cp bin test.lin.protocol.Pop3Test
 ```
 At compile time, if we do not use the -encoding parameter to specify the encoding format of our JAVA source code, javac.exe will get our operating system default encoding format. In _windows_, the default encoding format is _-encoding gbk*_. IF the encoding format of our JAVA source code is not _-encoding gbk*_, we should use the -encoding parameter to specify it. For example:
 ``` cmd
-// compile a code file encoded with _utf-8_
+// compile a code file encoded with utf-8
 javac -encoding utf-8 -d bin -cp bin com/view/LoginFrame.java
 ```
 
