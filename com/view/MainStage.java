@@ -26,11 +26,16 @@ import com.lin.view.*;
 
 public class MainStage extends Stage {
 
+    private User user;
+    private EmailClientDB emailClientDB;
+
     private Button btn;
     private StackPane root;
     private Scene scene;
 
-    public MainStage() {
+    public MainStage(User user) {
+        this.user = user;
+        this.emailClientDB = EmailClientDB.getInstance();
         initComponents();
         initEvents();
     }
@@ -53,7 +58,7 @@ public class MainStage extends Stage {
         btn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
-                LogUtil.i("hello stage");            
+                LogUtil.i("hello stage");
             }
         });
     }

@@ -20,6 +20,7 @@ public class Pop3 {
     private BufferedReader in_from_server;
     private PrintWriter out_to_server;
     private String response;
+    private boolean status;
 
 	public Pop3(String pop_server, String user_addr, String user_pass) {
 		super();
@@ -37,8 +38,10 @@ public class Pop3 {
             out_to_server = new PrintWriter(socket.getOutputStream());
             response = in_from_server.readLine();
             LogUtil.i("Server: " + response);
+            status = true;
             if (!("+OK".equals(response.substring(0,3)))) {
                 LogUtil.e("Connect Failed!");
+                status = false;
             }
             // connect and login
             sendAndCheck("USER " + user_addr);
@@ -179,11 +182,16 @@ public class Pop3 {
             LogUtil.i("Client: " + cmd);
             LogUtil.i("Server: " + response);
             if (!"+OK".equals(response.substring(0,3))) {
+                status = false;
                 LogUtil.e("Connect Failed!");
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public boolean getStatus() {
+        return this.status;
     }
 
 }
