@@ -33,8 +33,14 @@ public class PopupTest extends Application {
 
         TextField input_text = new TextField();
 
-        StackPane root = new StackPane();
-        root.getChildren().add(input_text);
+        TextField input_text2 = new TextField();
+
+        VBox vb = new VBox();
+        vb.getChildren().add(input_text);
+        vb.getChildren().add(input_text2);
+
+        Pane root = new StackPane();
+        root.getChildren().add(vb);
 
         Scene scene = new Scene(root, 300, 250);
 
@@ -53,6 +59,7 @@ public class PopupTest extends Application {
                 popup.setX(300);
                 popup.setY(200);
                 popup.getContent().addAll(listView);
+                popup.requestFocus();
                 double x_offset = input_text.getScene().getWindow().getX() + input_text.getScene().getX() + input_text.localToScene(0, 0).getX();
                 double y_offset = input_text.getScene().getWindow().getY() + input_text.getScene().getY() + input_text.localToScene(0, 0).getY() + input_text.getBoundsInParent().getHeight();
                 popup.show(input_text, x_offset, y_offset);

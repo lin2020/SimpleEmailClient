@@ -1,6 +1,7 @@
 package com.lin.view;
 
 import java.util.*;
+import java.util.regex.*;
 import javafx.beans.value.ObservableValue;
 import javafx.application.Application;
 import javafx.event.*;
@@ -20,6 +21,7 @@ import javafx.stage.Stage;
 import javafx.collections.*;
 import javafx.stage.*;
 import javafx.geometry.*;
+import javafx.scene.input.KeyCode;
 
 import com.lin.view.*;
 import com.lin.util.*;
@@ -115,6 +117,9 @@ public class Login extends Application {
         addrField.setOnKeyReleased(new EventHandler<KeyEvent>() {
             @Override
             public void handle(KeyEvent e) {
+                if (e.getCode() == KeyCode.DOWN) {
+                    hint_list.requestFocus();
+                }
                 String addr = addrField.getText();
                 if ("".equals(addr) || addr == null || addr.contains("@")) {
                     hint_list.setVisible(false);
@@ -133,8 +138,9 @@ public class Login extends Application {
             @Override
             public void handle(ActionEvent e) {
                 if (hasUser(addrField.getText(), pswdField.getText())) {
+                    User user = new User(addrField.getText(), pswdField.getText());
                     primaryStage.close();
-                    new MainStage().show();
+                    new MainStage(user).show();
                 } else {
                     hint.setFill(Color.FIREBRICK);
                     hint.setText("Email addr or Password error!");
@@ -142,10 +148,15 @@ public class Login extends Application {
             }
         });
 
-        hint_list.getSelectionModel().selectedItemProperty().addListener(
-            (ObservableValue<? extends String> observable, String oldValue, String newValue) ->{
-                addrField.setText(newValue);
-                hint_list.setVisible(false);
+        hint_list.setOnKeyReleased(new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent e) {
+                if (e.getCode() == KeyCode.ENTER) {
+                    addrField.setText(hint_list.getFocusModel().getFocusedItem());
+                    LogUtil.i("Enter");
+                    hint_list.setVisible(false);
+                }
+            }
         });
 
         scene.setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -157,6 +168,17 @@ public class Login extends Application {
     }
 
     private boolean hasUser(String addr, String pass) {
+        if ("".equals(addr) || "".equals(pass)) {
+            LogUtil.i("input null");
+            return false;
+        }
+        String email_regex = "(\\w)+(\\.\\w+)*@(\\w)+((\\.\\w+)+)";
+        Pattern p = Pattern.compile(email_regex);
+        Matcher m = p.matcher(addr);
+        if (!m.find()) {
+            LogUtil.i("addr error");
+            return false;
+        }
         for (User u : all_users) {
             if (u.getEmail_addr().equals(addr) && u.getEmail_pass().equals(pass)) {
                 return true;
@@ -168,9 +190,7 @@ public class Login extends Application {
         Pop3 pop = new Pop3(server, addr, pass);
         LogUtil.i("status" + pop.getStatus());
         if (pop.getStatus()) {
-            User user = new User();
-            user.setEmail_addr(addr);
-            user.setEmail_pass(pass);
+            User user = new User(addr, pass);
             emailClientDB.insertUser(user);
             return true;
         }

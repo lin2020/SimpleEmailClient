@@ -18,27 +18,27 @@ public class EmailClientDBTest {
 
         // email
         List<Email> emails = new ArrayList<Email>();
-        Email email1 = new Email();
+        String to_string = "1780615543@qq.com;abc_2020@sohu.com;15172323141@163.com;";
+        String cc_string = "1780615543@qq.com;abc_2020@sohu.com;";
+        String bcc_string = "1780615543@qq.com;";
+        Email email1 = new Email("1780615543@qq.com", to_string, cc_string, bcc_string, "hello", "This is email 1");
         email1.setUidl("170401.s");
         email1.setUserid(1);
         email1.setInbox("inbox");
-        email1.setTheme("hello");
-        email1.setFrom("wangyi");
-        email1.setContent("hello world");
         Email email2 = new Email();
         email2.setUidl("170401.ss");
         email2.setUserid(2);
         email2.setInbox("trash");
-        email2.setTheme("hi");
-        email2.setFrom("ali");
-        email2.setContent("hi world");
+        email2.setTheme("hello");
+        email2.setFrom("abc_2020@sohu.com");
+        email2.setContent("This is email 2");
         Email email3 = new Email();
         email3.setUidl("170401.sss");
         email3.setUserid(1);
         email3.setInbox("inbox");
-        email3.setTheme("helo");
-        email3.setFrom("tencent");
-        email3.setContent("helo world");
+        email3.setTheme("hello");
+        email3.setFrom("15172323141@163.com");
+        email3.setContent("This is email 3");
 
         // load driver
         Class.forName("org.sqlite.JDBC");
@@ -74,19 +74,25 @@ public class EmailClientDBTest {
         emailClientDB.insertEmail(email1);
         emailClientDB.insertEmail(email2);
         emailClientDB.insertEmail(email3);
+        LogUtil.i("loading where 1 and inbox -----------------------------------------------------");
         emails = emailClientDB.loadEmails(1, "inbox");
         for (Email e : emails) {
-            LogUtil.i("Uidl = " + e.getUidl() + " Userid = " + e.getUserid() + " Inbox = " + e.getInbox() + " Theme = " + e.getTheme());
+            LogUtil.i("Uidl = " + e.getUidl() + " Userid = " + e.getUserid() + " Inbox = " + e.getInbox());
+            LogUtil.i(e.toString());
         }
+        LogUtil.i("loading where 2 and trash -----------------------------------------------------");
         emails = emailClientDB.loadEmails(2, "trash");
         for (Email e : emails) {
-            LogUtil.i("Uidl = " + e.getUidl() + " Userid = " + e.getUserid() + " Inbox = " + e.getInbox() + " Theme = " + e.getTheme());
+            LogUtil.i("Uidl = " + e.getUidl() + " Userid = " + e.getUserid() + " Inbox = " + e.getInbox());
+            LogUtil.i(e.toString());
         }
         // delete
         emailClientDB.deleteEmail(email3);
+        LogUtil.i("loading where 1 and inbox -----------------------------------------------------");
         emails = emailClientDB.loadEmails(1, "inbox");
         for (Email e : emails) {
-            LogUtil.i("Uidl = " + e.getUidl() + " Userid = " + e.getUserid() + " Inbox = " + e.getInbox() + " Theme = " + e.getTheme());
+            LogUtil.i("Uidl = " + e.getUidl() + " Userid = " + e.getUserid() + " Inbox = " + e.getInbox());
+            LogUtil.i(e.toString());
         }
     }
 }

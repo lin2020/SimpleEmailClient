@@ -11,6 +11,12 @@ public class User {
         super();
     }
 
+    public User(String email_addr, String email_pass) {
+        super();
+        this.email_addr = email_addr;
+        this.email_pass = email_pass;
+    }
+
 	public User(Integer id, String name, String email_addr, String email_pass) {
 		super();
 		this.id = id;

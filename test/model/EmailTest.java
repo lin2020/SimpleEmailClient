@@ -34,15 +34,38 @@ public class EmailTest {
         response.addElement("PGRpdj6y4srU08q8/jwvZGl2Pg==");
         response.addElement("------=_NextPart_58E37821_0A60FCF8_0A80AE2D--");
 
-        // test email
+        // test email 1
         Email email = new Email(user, response);
+        LogUtil.i("--------------------------------");
         LogUtil.i("From: " + email.getFrom());
-        LogUtil.i("To_List: ");
-        for (String s : email.getTo_list()) {
-            LogUtil.i(s);
-        }
-        LogUtil.i("Subject: " + email.getTheme());
-        LogUtil.i("Content:");
-        LogUtil.i(email.getContent());
+        LogUtil.i("To_List: " + email.getToString());
+        LogUtil.i("Theme: " + email.getTheme());
+        LogUtil.i("Content:" + email.getContent());
+
+        // test email 2
+        Vector<String> to_list = new Vector<String>();
+        to_list.addElement("1780615543@qq.com");
+        to_list.addElement("abc_2020@sohu.com");
+        to_list.addElement("15172323141@163.com");
+        Vector<String> cc_list = new Vector<String>();
+        cc_list.addElement("1780615543@qq.com");
+        cc_list.addElement("abc_2020@sohu.com");
+        Vector<String> bcc_list = new Vector<String>();
+        bcc_list.addElement("1780615543@qq.com");
+        String theme = "Test";
+        String content = "This is content";
+
+        Email email2 = new Email(user.getEmail_addr(), to_list, cc_list, bcc_list, theme, content);
+        LogUtil.i("--------------------------------");
+        LogUtil.i(email2.toString());
+
+        // test email 3
+        String to_string = "1780615543@qq.com;abc_2020@sohu.com;15172323141@163.com;";
+        String cc_string = "1780615543@qq.com;abc_2020@sohu.com;";
+        String bcc_string = "1780615543@qq.com;";
+
+        Email email3 = new Email(user.getEmail_addr(), to_string, cc_string, bcc_string, theme, content);
+        LogUtil.i("--------------------------------");
+        LogUtil.i(email3.toString());
     }
 }

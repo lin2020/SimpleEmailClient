@@ -12,6 +12,23 @@ public class EmailClientDB {
 	private String dir_name = "C:\\SimpleEmailClient";
 	// database name
 	private String db_name = "jdbc:sqlite:" + dir_name + "\\email_client.db";
+	// user table
+	private static final String CREATE_USER = "create table if not exists user ("
+												+ "id integer primary key autoincrement, "
+												+ "name String, "
+												+ "email_addr String, "
+												+ "email_pass String)";
+	// email table
+	public static final String CREATE_EMAIL = "create table if not exists email ("
+												+ "uidl String, "
+												+ "userid integer, "
+												+ "inbox String, "
+												+ "from_addr String, "
+												+ "to_list String, "
+												+ "cc_list String, "
+												+ "bcc_list String, "
+												+ "theme String, "
+												+ "content String)";
 
 	// singleton
 	private static EmailClientDB emailClientDB = null;
@@ -48,9 +65,9 @@ public class EmailClientDB {
 		try {
 			connection = DriverManager.getConnection(db_name);
 			PreparedStatement pre;
-			pre = connection.prepareStatement("create table if not exists user (id integer primary key autoincrement, name String, email_addr String, email_pass String)");
+			pre = connection.prepareStatement(CREATE_USER);
 			pre.executeUpdate();
-			pre = connection.prepareStatement("create table if not exists email (uidl String, userid integer, inbox String, theme String, from_addr String, to_addr String, content String)");
+			pre = connection.prepareStatement(CREATE_EMAIL);
 			pre.executeUpdate();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -188,8 +205,11 @@ public class EmailClientDB {
 				email.setUidl(rs.getString("uidl"));
 				email.setUserid(rs.getInt("userid"));
 				email.setInbox(rs.getString("inbox"));
-				email.setTheme(rs.getString("theme"));
 				email.setFrom(rs.getString("from_addr"));
+				email.setToByString(rs.getString("to_list"));
+				email.setCcByString(rs.getString("cc_list"));
+				email.setBccByString(rs.getString("bcc_list"));
+				email.setTheme(rs.getString("theme"));
 				email.setContent(rs.getString("content"));
 				list.add(email);
 				LogUtil.i("Load email");
@@ -213,14 +233,16 @@ public class EmailClientDB {
 		Connection connection = null;
 		try {
 			connection = DriverManager.getConnection(db_name);
-			PreparedStatement pre = connection.prepareStatement("insert into email values(?, ?, ?, ?, ?, ?, ?)");
+			PreparedStatement pre = connection.prepareStatement("insert into email values(?, ?, ?, ?, ?, ?, ?, ?, ?)");
 			pre.setString(1, email.getUidl());
 			pre.setInt(2, email.getUserid());
 			pre.setString(3, email.getInbox());
-			pre.setString(4, email.getTheme());
-			pre.setString(5, email.getFrom());
-			pre.setString(6, null);
-			pre.setString(7, email.getContent());
+			pre.setString(4, email.getFrom());
+			pre.setString(5, email.getToString());
+			pre.setString(6, email.getCcString());
+			pre.setString(7, email.getBccString());
+			pre.setString(8, email.getTheme());
+			pre.setString(9, email.getContent());
 			pre.executeUpdate();
 		} catch (Exception e) {
 			e.printStackTrace();
