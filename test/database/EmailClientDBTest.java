@@ -12,9 +12,9 @@ public class EmailClientDBTest {
     public static void main(String[] args) throws Exception {
         // user
         List<User> users = new ArrayList<User>();
-        User user1 = new User(1, "lin", "abc_2020", "abc2020");
-        User user2 = new User(3, "jia", "12333", "hhhe");
-        User user3 = new User(5, "dong", "2222", "vdnja");
+        User user1 = new User(1, "lin", "abc_2020@sohu.com", "abc2020");
+        User user2 = new User(3, "jia", "1780615543@qq.com", "hhhe");
+        User user3 = new User(5, "dong", "15172323141@163.com", "vdnja");
 
         // email
         List<Email> emails = new ArrayList<Email>();
@@ -24,18 +24,18 @@ public class EmailClientDBTest {
         Email email1 = new Email("1780615543@qq.com", to_string, cc_string, bcc_string, "hello", "This is email 1");
         email1.setUidl("170401.s");
         email1.setUserid(1);
-        email1.setInbox("inbox");
+        email1.setInbox("收件箱");
         Email email2 = new Email();
         email2.setUidl("170401.ss");
         email2.setUserid(2);
-        email2.setInbox("trash");
+        email2.setInbox("垃圾箱");
         email2.setTheme("hello");
         email2.setFrom("abc_2020@sohu.com");
         email2.setContent("This is email 2");
         Email email3 = new Email();
         email3.setUidl("170401.sss");
         email3.setUserid(1);
-        email3.setInbox("inbox");
+        email3.setInbox("收件箱");
         email3.setTheme("hello");
         email3.setFrom("15172323141@163.com");
         email3.setContent("This is email 3");
@@ -75,13 +75,13 @@ public class EmailClientDBTest {
         emailClientDB.insertEmail(email2);
         emailClientDB.insertEmail(email3);
         LogUtil.i("loading where 1 and inbox -----------------------------------------------------");
-        emails = emailClientDB.loadEmails(1, "inbox");
+        emails = emailClientDB.loadEmails(1, "收件箱");
         for (Email e : emails) {
             LogUtil.i("Uidl = " + e.getUidl() + " Userid = " + e.getUserid() + " Inbox = " + e.getInbox());
             LogUtil.i(e.toString());
         }
         LogUtil.i("loading where 2 and trash -----------------------------------------------------");
-        emails = emailClientDB.loadEmails(2, "trash");
+        emails = emailClientDB.loadEmails(2, "垃圾箱");
         for (Email e : emails) {
             LogUtil.i("Uidl = " + e.getUidl() + " Userid = " + e.getUserid() + " Inbox = " + e.getInbox());
             LogUtil.i(e.toString());
@@ -89,7 +89,7 @@ public class EmailClientDBTest {
         // delete
         emailClientDB.deleteEmail(email3);
         LogUtil.i("loading where 1 and inbox -----------------------------------------------------");
-        emails = emailClientDB.loadEmails(1, "inbox");
+        emails = emailClientDB.loadEmails(1, "收件箱");
         for (Email e : emails) {
             LogUtil.i("Uidl = " + e.getUidl() + " Userid = " + e.getUserid() + " Inbox = " + e.getInbox());
             LogUtil.i(e.toString());

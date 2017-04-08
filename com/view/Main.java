@@ -24,6 +24,7 @@ import javafx.stage.*;
 import javafx.geometry.*;
 import javafx.scene.Parent;
 import javafx.fxml.*;
+import java.util.regex.*;
 
 import com.lin.database.*;
 import com.lin.model.*;
@@ -55,11 +56,8 @@ public class Main extends Application {
     private TreeItem<String> rootNode;
     // email pane
     private VBox emailBox;
-    private ListView<String> listView;
-    private ObservableList<String> listData = FXCollections.observableArrayList(
-            "chocolate", "salmon", "gold", "coral", "darkorchid",
-            "darkgoldenrod", "lightsalmon", "black", "rosybrown", "blue",
-            "blueviolet", "brown");
+    private ListView<Email> listView;
+    private ObservableList<Email> listData;
     // content pane
     private VBox contentBox;
 
@@ -79,6 +77,8 @@ public class Main extends Application {
         }
         emailClientDB = EmailClientDB.getInstance();
         users = emailClientDB.loadUsers();
+        emails = new ArrayList<> ();
+        listData = FXCollections.observableArrayList(emails);
     }
 
     private void initComponents(Stage primaryStage) {
@@ -98,7 +98,7 @@ public class Main extends Application {
 
         // *** userBox
         userBox = new VBox();
-        rootNode = new TreeItem<> ("All Users");
+        rootNode = new TreeItem<> ("user@example.com");
         rootNode.setExpanded(true);
         for (User u : users) {
             TreeItem<String> userNode = new TreeItem<> (u.getEmail_addr());
@@ -117,7 +117,7 @@ public class Main extends Application {
         emailBox = new VBox();
         listView = new ListView<> ();
         listView.setItems(listData);
-        listView.setCellFactory((ListView<String> l) -> new MyListCell());
+        listView.setCellFactory((ListView<Email> l) -> new MyListCell());
         VBox.setVgrow(listView, Priority.ALWAYS);
         emailBox.getChildren().add(listView);
 
@@ -145,15 +145,39 @@ public class Main extends Application {
         treeView.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent e) {
-                String str = treeView.getSelectionModel().getSelectedItem().getValue();
-                String user = treeView.getSelectionModel().getSelectedItem().getParent().getValue();
-                int dex = treeView.getSelectionModel().getSelectedIndex();
-                LogUtil.i(str + user + dex);
+                // String str = treeView.getSelectionModel().getSelectedItem().getValue();
+                // String user = treeView.getSelectionModel().getSelectedItem().getParent().getValue();
+                // int dex = treeView.getSelectionModel().getSelectedIndex();
+                // LogUtil.i(str + user + dex);
+                emails = new ArrayList<Email>();
+                String email_regex = "\\w+(\\.\\w+)*@(\\w)+((\\.\\w+)+)";
+                String treeItemValue = treeView.getSelectionModel().getSelectedItem().getValue();
+                Pattern p = Pattern.compile(email_regex);
+                Matcher m = p.matcher(treeItemValue);
+                if (!m.find()) {
+                    LogUtil.i("Click box");
+                    User user = null;
+                    String treeNodeValue = treeView.getSelectionModel().getSelectedItem().getParent().getValue();
+                    for (User u : users) {
+                        if (u.getEmail_addr().equals(treeNodeValue)) {
+                            user = u;
+                            break;
+                        }
+                    }
+                    if (user == null) {
+                        LogUtil.i("can't find user");
+                    } else {
+                        emails = emailClientDB.loadEmails(user.getId(), treeItemValue);
+                    }
+                }
+                listData = FXCollections.observableArrayList(emails);
+                listView.setItems(listData);
+                listView.setCellFactory((ListView<Email> l) -> new MyListCell());
             }
         });
 
         listView.getSelectionModel().selectedItemProperty().addListener(
-        (ObservableValue<? extends String> ov, String old_val, String new_val) -> {
+        (ObservableValue<? extends Email> ov, Email old_val, Email new_val) -> {
             LogUtil.i("happen");
         });
 
@@ -168,7 +192,7 @@ public class Main extends Application {
                         public void handle(ActionEvent e) {
                             listData.remove(listView.getSelectionModel().getSelectedItem());
                             listView.setItems(listData);
-                            listView.setCellFactory((ListView<String> l) -> new MyListCell());
+                            listView.setCellFactory((ListView<Email> l) -> new MyListCell());
                             LogUtil.i("删除");
                         }
                     });
@@ -187,12 +211,12 @@ public class Main extends Application {
 
     }
 
-    class MyListCell extends ListCell<String> {
+    class MyListCell extends ListCell<Email> {
        @Override
-       public void updateItem(String item, boolean empty) {
+       public void updateItem(Email item, boolean empty) {
            super.updateItem(item, empty);
            if (item != null) {
-               Text text = new Text(item);
+               Text text = new Text(item.getTheme());
                // Button btn = new Button("test");
                setGraphic(text);
            }
