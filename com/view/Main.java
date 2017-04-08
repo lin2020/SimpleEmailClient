@@ -1,6 +1,7 @@
 package com.lin.view;
 
 import java.util.*;
+import javax.swing.event.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.application.Application;
 import javafx.event.*;
@@ -34,6 +35,7 @@ public class Main extends Application {
     // database
     private List<User> users;
     private EmailClientDB emailClientDB;
+    private String[] boxName = {"收件箱", "发件箱", "草稿箱", "垃圾箱"};
 
     private Scene scene;
     // root node
@@ -43,12 +45,16 @@ public class Main extends Application {
     private Menu setupMenu;
     private Menu recvMenu;
     private Menu sendMenu;
-    // content node
+    // split node
     private SplitPane splitPane;
-    private AnchorPane userPane;
-    private Button btn;
-    private AnchorPane emailPane;
-    private AnchorPane contentPane;
+    // user pane
+    private VBox userBox;
+    private TreeView<String> treeView;
+    private TreeItem<String> rootNode;
+    // email pane
+    private VBox emailBox;
+    // content pane
+    private VBox contentBox;
 
 
     @Override
@@ -69,33 +75,80 @@ public class Main extends Application {
     }
 
     private void initComponents(Stage primaryStage) {
+        // * root pane
         vBox = new VBox();
 
+        // ** menu pane
         menuBar = new MenuBar();
         setupMenu = new Menu("设置");
         recvMenu = new Menu("收邮件");
         sendMenu = new Menu("写邮件");
         menuBar.getMenus().addAll(setupMenu, recvMenu, sendMenu);
 
+        // ** split pane
         splitPane = new SplitPane();
         splitPane.setDividerPositions(0.25, 0.5);
-        userPane = new AnchorPane();
-        emailPane = new AnchorPane();
-        contentPane = new AnchorPane();
-        splitPane.getItems().addAll(userPane, emailPane, contentPane);
 
-        vBox.getChildren().add(menuBar);
-        vBox.getChildren().add(splitPane);
+        // *** userBox
+        userBox = new VBox();
+        rootNode = new TreeItem<> ("All Users");
+        rootNode.setExpanded(true);
+        for (User u : users) {
+            TreeItem<String> userNode = new TreeItem<> (u.getEmail_addr());
+            for(String s : boxName) {
+                TreeItem<String> boxleaf = new TreeItem<> (s);
+                userNode.getChildren().add(boxleaf);
+            }
+            rootNode.getChildren().add(userNode);
+        }
+        treeView = new TreeView<> (rootNode);
+        treeView.setShowRoot(false);
+        VBox.setVgrow(treeView, Priority.ALWAYS);
+        userBox.getChildren().add(treeView);
+
+        // ***emailBox
+        emailBox = new VBox();
+        // final ComboBox<String> emailComboBox = new ComboBox<>();
+        // emailComboBox.getItems().addAll(
+        //    "jacob.smith@example.com",
+        //    "isabella.johnson@example.com",
+        //    "ethan.williams@example.com",
+        //    "emma.jones@example.com",
+        //    "michael.brown@example.com"
+        // );
+        // emailComboBox.setPromptText("Email address");
+        // emailComboBox.setEditable(true);
+        // emailBox.getChildren().add(emailComboBox);
+
+        contentBox = new VBox();
+
+
+        splitPane.getItems().addAll(userBox, emailBox, contentBox);
         VBox.setVgrow(splitPane, Priority.ALWAYS);
 
+        // add menuBar and splitPane to root pane
+        vBox.getChildren().addAll(menuBar, splitPane);
+
+        // add root pane to scene
         scene = new Scene(vBox, 900, 600);
 
+        // set and show primary stage
         primaryStage.setTitle("Email Client");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
     private void initEvents(Stage primaryStage) {
+
+        treeView.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent e) {
+                String str = treeView.getSelectionModel().getSelectedItem().getValue();
+                String user = treeView.getSelectionModel().getSelectedItem().getParent().getValue();
+                int dex = treeView.getSelectionModel().getSelectedIndex();
+                LogUtil.i(str + user + dex);
+            }
+        });
 
     }
 

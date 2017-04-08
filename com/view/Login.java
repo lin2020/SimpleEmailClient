@@ -53,7 +53,7 @@ public class Login extends Application {
     @Override
     public void start(Stage primaryStage) {
         initEmailClientDB(primaryStage);
-        if (!all_users.isEmpty()) {
+        if (all_users.isEmpty()) {
             primaryStage.close();
             new MainStage().show();
         } else {
