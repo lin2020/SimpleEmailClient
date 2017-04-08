@@ -26,15 +26,13 @@ import com.lin.view.*;
 
 public class MainStage extends Stage {
 
-    private User user;
     private EmailClientDB emailClientDB;
 
     private Button btn;
     private StackPane root;
     private Scene scene;
 
-    public MainStage(User user) {
-        this.user = user;
+    public MainStage() {
         this.emailClientDB = EmailClientDB.getInstance();
         initComponents();
         initEvents();

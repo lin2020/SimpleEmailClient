@@ -76,10 +76,16 @@ public class Email {
             } else if (line.startsWith("To:")) {
                 Pattern p = Pattern.compile(email_regex);
                 Matcher m = p.matcher(line);
-                to_list = new Vector<String>();
                 while (m.find()) {
                     LogUtil.i(m.group());
                     to_list.addElement(m.group());
+                }
+            } else if(line.startsWith("Cc:")){
+                Pattern p = Pattern.compile(email_regex);
+                Matcher m = p.matcher(line);
+                while (m.find()) {
+                    LogUtil.i(m.group());
+                    cc_list.addElement(m.group());
                 }
             } else if (line.startsWith("Subject:")) {
                 Pattern p = Pattern.compile(subject_regex);

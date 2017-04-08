@@ -52,12 +52,17 @@ public class Login extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        initEmailClientDB();
-        initComponents(primaryStage);
-        initEvents(primaryStage);
+        initEmailClientDB(primaryStage);
+        if (!all_users.isEmpty()) {
+            primaryStage.close();
+            new MainStage().show();
+        } else {
+            initComponents(primaryStage);
+            initEvents(primaryStage);
+        }
     }
 
-    private void initEmailClientDB() {
+    private void initEmailClientDB(Stage primaryStage) {
         try {
             Class.forName("org.sqlite.JDBC");
         } catch (Exception e) {
@@ -140,7 +145,7 @@ public class Login extends Application {
                 if (hasUser(addrField.getText(), pswdField.getText())) {
                     User user = new User(addrField.getText(), pswdField.getText());
                     primaryStage.close();
-                    new MainStage(user).show();
+                    new MainStage().show();
                 } else {
                     hint.setFill(Color.FIREBRICK);
                     hint.setText("Email addr or Password error!");
