@@ -1,188 +1,116 @@
-import java.util.Arrays;
-import java.util.List;
-import javafx.application.Application;
-import javafx.scene.Node;
-import javafx.scene.Scene;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TreeCell;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.paint.Color;
-import javafx.stage.Stage;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.event.ActionEvent;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.layout.VBox;
+package com.lin.view;
 
-public class LoginFrame extends Application {
+import java.util.*;
+import java.awt.event.*;
+import javax.swing.*;
+import javax.swing.event.*;
+import javax.swing.border.*;
+import java.awt.*;
 
-    private final Node rootIcon =
-        new ImageView(new Image(getClass().getResourceAsStream("root.png")));
-    private final Image depIcon =
-        new Image(getClass().getResourceAsStream("department.png"));
-    List<Employee> employees = Arrays.<Employee>asList(
-            new Employee("Jacob Smith", "Accounts Department"),
-            new Employee("Isabella Johnson", "Accounts Department"),
-            new Employee("Ethan Williams", "Sales Department"),
-            new Employee("Emma Jones", "Sales Department"),
-            new Employee("Michael Brown", "Sales Department"),
-            new Employee("Anna Black", "Sales Department"),
-            new Employee("Rodger York", "Sales Department"),
-            new Employee("Susan Collins", "Sales Department"),
-            new Employee("Mike Graham", "IT Support"),
-            new Employee("Judy Mayer", "IT Support"),
-            new Employee("Gregory Smith", "IT Support"));
-    TreeItem<String> rootNode =
-        new TreeItem<>("MyCompany Human Resources", rootIcon);
+import com.lin.util.*;
 
-    public static void main(String[] args) {
-        Application.launch(args);
+public class LoginFrame {
+
+    private JFrame frame;
+    private JTextField addr_text;
+    private JTextField pass_text;
+    private JButton login_button;
+    private String addr_hint = "email address";
+    private String pass_hint = "email password";
+    private String login_hint = "登录";
+
+    public LoginFrame() {
+        initComponents();
+        initEvents();
     }
 
-    @Override
-    public void start(Stage stage) {
-        rootNode.setExpanded(true);
-        for (Employee employee : employees) {
-            TreeItem<String> empLeaf = new TreeItem<>(employee.getName());
-            boolean found = false;
-            for (TreeItem<String> depNode : rootNode.getChildren()) {
-                if (depNode.getValue().contentEquals(employee.getDepartment())){
-                    depNode.getChildren().add(empLeaf);
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                TreeItem depNode = new TreeItem(employee.getDepartment(),
-                    new ImageView(depIcon)
-                );
-                rootNode.getChildren().add(depNode);
-                depNode.getChildren().add(empLeaf);
-            }
-        }
+    private void initComponents() {
+        frame = new JFrame(login_hint);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        JPanel mainPanel = new JPanel();
+        mainPanel.setBackground(Color.white);
+        mainPanel.setLayout(null);
 
-        stage.setTitle("Tree View Sample");
-        VBox box = new VBox();
-        final Scene scene = new Scene(box, 400, 300);
-        scene.setFill(Color.LIGHTGRAY);
+        addr_text = new JTextField(addr_hint);
+        addr_text.setBounds(100, 75, 200, 24);
+        addr_text.setForeground(Color.LIGHT_GRAY);
+        addr_text.setMargin(new Insets(3, 3, 3, 3));
 
-        TreeView<String> treeView = new TreeView<>(rootNode);
-        treeView.setEditable(true);
-        treeView.setCellFactory((TreeView<String> p) ->
-            new TextFieldTreeCellImpl());
+        pass_text = new JTextField(pass_hint);
+        pass_text.setBounds(100, 110, 200, 24);
+        pass_text.setForeground(Color.LIGHT_GRAY);
+        pass_text.setMargin(new Insets(3, 3, 3, 3));
 
-        box.getChildren().add(treeView);
-        stage.setScene(scene);
-        stage.show();
+        login_button = new JButton(login_hint);
+        login_button.setBounds(100, 170, 200, 24);
+
+        mainPanel.add(addr_text);
+        mainPanel.add(pass_text);
+        mainPanel.add(login_button);
+
+        frame.getContentPane().add(BorderLayout.CENTER, mainPanel);
+        frame.setSize(400, 300);
+        frame.setResizable(false);
+        frame.setVisible(true);
     }
 
-    private final class TextFieldTreeCellImpl extends TreeCell<String> {
+    private void initEvents() {
 
-        private TextField textField;
-        private final ContextMenu addMenu = new ContextMenu();
-
-        public TextFieldTreeCellImpl() {
-            MenuItem addMenuItem = new MenuItem("Add Employee");
-            addMenu.getItems().add(addMenuItem);
-            addMenuItem.setOnAction((ActionEvent t) -> {
-                TreeItem newEmployee =
-                    new TreeItem<>("New Employee");
-                getTreeItem().getChildren().add(newEmployee);
-            });
-        }
-
-        @Override
-        public void startEdit() {
-            super.startEdit();
-
-            if (textField == null) {
-                createTextField();
-            }
-            setText(null);
-            setGraphic(textField);
-            textField.selectAll();
-        }
-
-        @Override
-        public void cancelEdit() {
-            super.cancelEdit();
-
-            setText((String) getItem());
-            setGraphic(getTreeItem().getGraphic());
-        }
-
-        @Override
-        public void updateItem(String item, boolean empty) {
-            super.updateItem(item, empty);
-
-            if (empty) {
-                setText(null);
-                setGraphic(null);
-            } else {
-                if (isEditing()) {
-                    if (textField != null) {
-                        textField.setText(getString());
-                    }
-                    setText(null);
-                    setGraphic(textField);
-                } else {
-                    setText(getString());
-                    setGraphic(getTreeItem().getGraphic());
-                    if (
-                        !getTreeItem().isLeaf()&&getTreeItem().getParent()!= null
-                    ){
-                        setContextMenu(addMenu);
-                    }
+        addr_text.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                LogUtil.i("addr gain");
+                addr_text.setForeground(Color.blue);
+                if (addr_text.getText().equals(addr_hint)) {
+                    addr_text.setText(null);
                 }
             }
-        }
 
-        private void createTextField() {
-            textField = new TextField(getString());
-            textField.setOnKeyReleased((KeyEvent t) -> {
-                if (t.getCode() == KeyCode.ENTER) {
-                    commitEdit(textField.getText());
-                } else if (t.getCode() == KeyCode.ESCAPE) {
-                    cancelEdit();
+            @Override
+            public void focusLost(FocusEvent e) {
+                LogUtil.i("addr lost");
+                if (addr_text.getText().trim().isEmpty()) {
+                    addr_text.setText(addr_hint);
+                    addr_text.setForeground(Color.LIGHT_GRAY);
                 }
-            });
+            }
+        });
 
-        }
+        pass_text.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                LogUtil.i("pass gain");
+                pass_text.setForeground(Color.blue);
+                if (pass_text.getText().equals(pass_hint)) {
+                    pass_text.setText(null);
+                }
+            }
 
-        private String getString() {
-            return getItem() == null ? "" : getItem().toString();
-        }
-    }
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (pass_text.getText().trim().isEmpty()) {
+                    pass_text.setText(pass_hint);
+                    pass_text.setForeground(Color.LIGHT_GRAY);
+                }
+            }
 
-    public static class Employee {
+        });
 
-        private final SimpleStringProperty name;
-        private final SimpleStringProperty department;
+        addr_text.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                LogUtil.i("insert");
+            }
 
-        private Employee(String name, String department) {
-            this.name = new SimpleStringProperty(name);
-            this.department = new SimpleStringProperty(department);
-        }
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                LogUtil.i("remove");
+            }
 
-        public String getName() {
-            return name.get();
-        }
-
-        public void setName(String fName) {
-            name.set(fName);
-        }
-
-        public String getDepartment() {
-            return department.get();
-        }
-
-        public void setDepartment(String fName) {
-            department.set(fName);
-        }
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                LogUtil.i("change");
+            }
+        });
     }
 }

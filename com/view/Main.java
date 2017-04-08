@@ -1,6 +1,7 @@
 package com.lin.view;
 
 import java.util.*;
+import java.awt.Rectangle;
 import javax.swing.event.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.application.Application;
@@ -34,6 +35,7 @@ public class Main extends Application {
 
     // database
     private List<User> users;
+    private List<Email> emails;
     private EmailClientDB emailClientDB;
     private String[] boxName = {"收件箱", "发件箱", "草稿箱", "垃圾箱"};
 
@@ -53,6 +55,11 @@ public class Main extends Application {
     private TreeItem<String> rootNode;
     // email pane
     private VBox emailBox;
+    private ListView<String> listView;
+    private ObservableList<String> listData = FXCollections.observableArrayList(
+            "chocolate", "salmon", "gold", "coral", "darkorchid",
+            "darkgoldenrod", "lightsalmon", "black", "rosybrown", "blue",
+            "blueviolet", "brown");
     // content pane
     private VBox contentBox;
 
@@ -108,18 +115,13 @@ public class Main extends Application {
 
         // ***emailBox
         emailBox = new VBox();
-        // final ComboBox<String> emailComboBox = new ComboBox<>();
-        // emailComboBox.getItems().addAll(
-        //    "jacob.smith@example.com",
-        //    "isabella.johnson@example.com",
-        //    "ethan.williams@example.com",
-        //    "emma.jones@example.com",
-        //    "michael.brown@example.com"
-        // );
-        // emailComboBox.setPromptText("Email address");
-        // emailComboBox.setEditable(true);
-        // emailBox.getChildren().add(emailComboBox);
+        listView = new ListView<> ();
+        listView.setItems(listData);
+        listView.setCellFactory((ListView<String> l) -> new MyListCell());
+        VBox.setVgrow(listView, Priority.ALWAYS);
+        emailBox.getChildren().add(listView);
 
+        // ***contentBox
         contentBox = new VBox();
 
 
@@ -150,6 +152,51 @@ public class Main extends Application {
             }
         });
 
+        listView.getSelectionModel().selectedItemProperty().addListener(
+        (ObservableValue<? extends String> ov, String old_val, String new_val) -> {
+            LogUtil.i("happen");
+        });
+
+        listView.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent e) {
+                if (e.getButton() == MouseButton.SECONDARY) {
+                    LogUtil.i("Mouse Click");
+                    final ContextMenu contextMenu = new ContextMenu();
+                    MenuItem item1 = new MenuItem("删除");
+                    item1.setOnAction(new EventHandler<ActionEvent>() {
+                        public void handle(ActionEvent e) {
+                            listData.remove(listView.getSelectionModel().getSelectedItem());
+                            listView.setItems(listData);
+                            listView.setCellFactory((ListView<String> l) -> new MyListCell());
+                            LogUtil.i("删除");
+                        }
+                    });
+                    MenuItem item2 = new MenuItem("移到垃圾箱");
+                    item2.setOnAction(new EventHandler<ActionEvent>() {
+                        public void handle(ActionEvent e) {
+                            LogUtil.i("移到垃圾箱");
+                        }
+                    });
+                    contextMenu.getItems().addAll(item1, item2);
+                    contextMenu.show(menuBar, e.getScreenX(), e.getScreenY());
+                    contextMenu.setAutoHide(true);
+                }
+            }
+        });
+
     }
+
+    class MyListCell extends ListCell<String> {
+       @Override
+       public void updateItem(String item, boolean empty) {
+           super.updateItem(item, empty);
+           if (item != null) {
+               Text text = new Text(item);
+               // Button btn = new Button("test");
+               setGraphic(text);
+           }
+       }
+   }
 
 }
