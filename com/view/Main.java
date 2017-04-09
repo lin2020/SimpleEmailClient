@@ -161,6 +161,12 @@ public class Main extends Application {
         //     }
         // });
 
+        commonMenuItem.setOnAction((ActionEvent t)->{
+            LogUtil.i("htmlMenuItem has been click");
+            User u = new User(1, "linjd", "abc_2020@sohu.com", "abc2020");
+            new ProgressDialog(u);
+        });
+
 
         htmlMenuItem.setOnAction((ActionEvent t)->{
             LogUtil.i("htmlMenuItem has been click");
