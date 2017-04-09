@@ -264,7 +264,8 @@ public class EmailClientDB {
 			connection = DriverManager.getConnection(db_name);
 			PreparedStatement pre = connection.prepareStatement("delete from email where uidl = ?");
 			pre.setString(1, email.getUidl());
-			pre.executeUpdate();
+			pre.executeQuery();
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -276,5 +277,42 @@ public class EmailClientDB {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	// query an email
+	public List<Email> queryEmails(String uidl) {
+		List<Email> list = new ArrayList<Email>();
+		Connection connection = null;
+		try {
+			connection = DriverManager.getConnection(db_name);
+			PreparedStatement pre = connection.prepareStatement("select * from email where uidl = ?");
+			pre.setString(1, uidl);
+			ResultSet rs = pre.executeQuery();
+			while (rs.next()) {
+				Email email = new Email();
+				email.setUidl(rs.getString("uidl"));
+				email.setUserid(rs.getInt("userid"));
+				email.setInbox(rs.getString("inbox"));
+				email.setFrom(rs.getString("from_addr"));
+				email.setToByString(rs.getString("to_list"));
+				email.setCcByString(rs.getString("cc_list"));
+				email.setBccByString(rs.getString("bcc_list"));
+				email.setTheme(rs.getString("theme"));
+				email.setContent(rs.getString("content"));
+				list.add(email);
+				LogUtil.i("Load email");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (connection != null) {
+					connection.close();
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return list;
 	}
 }

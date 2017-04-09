@@ -1,6 +1,7 @@
 package com.lin.view;
 
 import java.util.*;
+import java.text.SimpleDateFormat;
 import java.awt.Rectangle;
 import javax.swing.event.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -47,7 +48,10 @@ public class Main extends Application {
     private MenuBar menuBar;
     private Menu setupMenu;
     private Menu recvMenu;
+    // send menu
     private Menu sendMenu;
+    private MenuItem commonMenuItem;
+    private MenuItem htmlMenuItem;
     // split node
     private SplitPane splitPane;
     // user pane
@@ -85,12 +89,19 @@ public class Main extends Application {
         // * root pane
         vBox = new VBox();
 
+
         // ** menu pane
         menuBar = new MenuBar();
         setupMenu = new Menu("设置");
         recvMenu = new Menu("收邮件");
+
+        // *** sendMenu
         sendMenu = new Menu("写邮件");
+        commonMenuItem = new MenuItem("普通邮件");
+        htmlMenuItem = new MenuItem("HTML邮件");
+        sendMenu.getItems().addAll(commonMenuItem, htmlMenuItem);
         menuBar.getMenus().addAll(setupMenu, recvMenu, sendMenu);
+
 
         // ** split pane
         splitPane = new SplitPane();
@@ -141,6 +152,21 @@ public class Main extends Application {
     }
 
     private void initEvents(Stage primaryStage) {
+
+        // sendMenu.setOnAction(new EventHandler<ActionEvent>() {
+        //     @Override
+        //     public void handle(ActionEvent e) {
+        //         LogUtil.i("sendMenu has been click");
+        //         (new EmailEdit()).show();
+        //     }
+        // });
+
+        htmlMenuItem.setOnAction((ActionEvent t)->{
+            LogUtil.i("htmlMenuItem has been click");
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
+            LogUtil.i(df.format(new Date()));// new Date()为获取当前系统时间
+            new EmailEdit(df.format(new Date()).toString());
+        });
 
         treeView.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
