@@ -22,12 +22,13 @@ public class EmailClientDB {
 	public static final String CREATE_EMAIL = "create table if not exists email ("
 												+ "uidl String, "
 												+ "userid integer, "
+												+ "date String, "
 												+ "inbox String, "
 												+ "from_addr String, "
 												+ "to_list String, "
 												+ "cc_list String, "
 												+ "bcc_list String, "
-												+ "theme String, "
+												+ "subject String, "
 												+ "content String)";
 
 	// singleton
@@ -204,12 +205,13 @@ public class EmailClientDB {
 				Email email = new Email();
 				email.setUidl(rs.getString("uidl"));
 				email.setUserid(rs.getInt("userid"));
+				email.setDate(rs.getString("date"));
 				email.setInbox(rs.getString("inbox"));
 				email.setFrom(rs.getString("from_addr"));
 				email.setToByString(rs.getString("to_list"));
 				email.setCcByString(rs.getString("cc_list"));
 				email.setBccByString(rs.getString("bcc_list"));
-				email.setTheme(rs.getString("theme"));
+				email.setSubject(rs.getString("subject"));
 				email.setContent(rs.getString("content"));
 				list.add(email);
 				LogUtil.i("Load email");
@@ -233,16 +235,17 @@ public class EmailClientDB {
 		Connection connection = null;
 		try {
 			connection = DriverManager.getConnection(db_name);
-			PreparedStatement pre = connection.prepareStatement("insert into email values(?, ?, ?, ?, ?, ?, ?, ?, ?)");
+			PreparedStatement pre = connection.prepareStatement("insert into email values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 			pre.setString(1, email.getUidl());
 			pre.setInt(2, email.getUserid());
-			pre.setString(3, email.getInbox());
-			pre.setString(4, email.getFrom());
-			pre.setString(5, email.getToString());
-			pre.setString(6, email.getCcString());
-			pre.setString(7, email.getBccString());
-			pre.setString(8, email.getTheme());
-			pre.setString(9, email.getContent());
+			pre.setString(3, email.getDate());
+			pre.setString(4, email.getInbox());
+			pre.setString(5, email.getFrom());
+			pre.setString(6, email.getToString());
+			pre.setString(7, email.getCcString());
+			pre.setString(8, email.getBccString());
+			pre.setString(9, email.getSubject());
+			pre.setString(10, email.getContent());
 			pre.executeUpdate();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -264,8 +267,7 @@ public class EmailClientDB {
 			connection = DriverManager.getConnection(db_name);
 			PreparedStatement pre = connection.prepareStatement("delete from email where uidl = ?");
 			pre.setString(1, email.getUidl());
-			pre.executeQuery();
-
+			pre.executeUpdate();
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -292,12 +294,13 @@ public class EmailClientDB {
 				Email email = new Email();
 				email.setUidl(rs.getString("uidl"));
 				email.setUserid(rs.getInt("userid"));
+				email.setDate(rs.getString("date"));
 				email.setInbox(rs.getString("inbox"));
 				email.setFrom(rs.getString("from_addr"));
 				email.setToByString(rs.getString("to_list"));
 				email.setCcByString(rs.getString("cc_list"));
 				email.setBccByString(rs.getString("bcc_list"));
-				email.setTheme(rs.getString("theme"));
+				email.setSubject(rs.getString("subject"));
 				email.setContent(rs.getString("content"));
 				list.add(email);
 				LogUtil.i("Load email");

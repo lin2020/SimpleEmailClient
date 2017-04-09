@@ -161,9 +161,10 @@ public class Main extends Application {
         //     }
         // });
 
+
         htmlMenuItem.setOnAction((ActionEvent t)->{
             LogUtil.i("htmlMenuItem has been click");
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
+            SimpleDateFormat df = new SimpleDateFormat("EE, M MMM yyyy hh:mm:ss Z", Locale.US);//设置日期格式
             LogUtil.i(df.format(new Date()));// new Date()为获取当前系统时间
             new EmailEdit(df.format(new Date()).toString());
         });
@@ -242,7 +243,7 @@ public class Main extends Application {
        public void updateItem(Email item, boolean empty) {
            super.updateItem(item, empty);
            if (item != null) {
-               Text text = new Text(item.getTheme());
+               Text text = new Text(item.getSubject());
                // Button btn = new Button("test");
                setGraphic(text);
            }

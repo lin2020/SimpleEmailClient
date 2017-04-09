@@ -39,7 +39,7 @@ public class EmailTest {
         LogUtil.i("--------------------------------");
         LogUtil.i("From: " + email.getFrom());
         LogUtil.i("To_List: " + email.getToString());
-        LogUtil.i("Theme: " + email.getTheme());
+        LogUtil.i("Subject: " + email.getSubject());
         LogUtil.i("Content:" + email.getContent());
 
         // test email 2
@@ -52,10 +52,10 @@ public class EmailTest {
         cc_list.addElement("abc_2020@sohu.com");
         Vector<String> bcc_list = new Vector<String>();
         bcc_list.addElement("1780615543@qq.com");
-        String theme = "Test";
+        String subject = "Test";
         String content = "This is content";
 
-        Email email2 = new Email(user.getEmail_addr(), to_list, cc_list, bcc_list, theme, content);
+        Email email2 = new Email(user.getEmail_addr(), to_list, cc_list, bcc_list, subject, content);
         LogUtil.i("--------------------------------");
         LogUtil.i(email2.toString());
 
@@ -64,7 +64,7 @@ public class EmailTest {
         String cc_string = "1780615543@qq.com;abc_2020@sohu.com;";
         String bcc_string = "1780615543@qq.com;";
 
-        Email email3 = new Email(user.getEmail_addr(), to_string, cc_string, bcc_string, theme, content);
+        Email email3 = new Email(user.getEmail_addr(), to_string, cc_string, bcc_string, subject, content);
         LogUtil.i("--------------------------------");
         LogUtil.i(email3.toString());
     }

@@ -25,20 +25,23 @@ public class EmailClientDBTest {
         email1.setUidl("170401.s");
         email1.setUserid(1);
         email1.setInbox("收件箱");
+        email1.setDate("Sun, 9 Apr 2017 11:36:06 +0800");
         Email email2 = new Email();
         email2.setUidl("170401.ss");
         email2.setUserid(2);
         email2.setInbox("垃圾箱");
-        email2.setTheme("hello");
+        email2.setSubject("hello");
         email2.setFrom("abc_2020@sohu.com");
         email2.setContent("This is email 2");
+        email2.setDate("Sun, 9 Apr 2017 11:36:06 +0800");
         Email email3 = new Email();
         email3.setUidl("170401.sss");
         email3.setUserid(1);
         email3.setInbox("收件箱");
-        email3.setTheme("hello");
+        email3.setSubject("hello");
         email3.setFrom("15172323141@163.com");
         email3.setContent("This is email 3");
+        email3.setDate("Sun, 9 Apr 2017 11:36:06 +0800");
 
         // load driver
         Class.forName("org.sqlite.JDBC");

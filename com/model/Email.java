@@ -11,6 +11,8 @@ public class Email {
     private String uidl = "";
     // 邮件的用户id
     private Integer userid;
+    // 邮件的时间
+    private String date = "";
     // 邮件所在的文件夹
     private String inbox = "";
     // 邮件的发送方
@@ -22,7 +24,7 @@ public class Email {
     // 邮件的密送对象列表
     private Vector<String> bcc_list = new Vector<String>();
     // 邮件的主题
-    private String theme = "";
+    private String subject = "";
     // 邮件的内容
     private String content = "";
 
@@ -37,23 +39,51 @@ public class Email {
         init(user, response);
     }
 
-    public Email(String from, String to_stirng, String cc_stirng, String bcc_stirng, String theme, String content) {
+    public Email(String from, String to_stirng, String cc_stirng, String bcc_stirng, String subject, String content) {
         super();
         this.from = from;
         setToByString(to_stirng);
         setCcByString(cc_stirng);
         setBccByString(bcc_stirng);
-        this.theme = theme;
+        this.subject = subject;
         this.content = content;
 	}
 
-	public Email(String from, Vector<String> to_list, Vector<String> cc_list, Vector<String> bcc_list, String theme, String content) {
+	public Email(String from, Vector<String> to_list, Vector<String> cc_list, Vector<String> bcc_list, String subject, String content) {
         super();
 		this.from = from;
 		this.to_list = to_list;
         this.cc_list = cc_list;
         this.bcc_list = bcc_list;
-        this.theme = theme;
+        this.subject = subject;
+		this.content = content;
+	}
+
+    public Email(String uidl, Integer userid, String date, String inbox, String from, String to_stirng, String cc_stirng, String bcc_stirng, String subject, String content) {
+        super();
+        this.uidl = uidl;
+        this.userid = userid;
+        this.date = date;
+        this.inbox = inbox;
+        this.from = from;
+        setToByString(to_stirng);
+        setCcByString(cc_stirng);
+        setBccByString(bcc_stirng);
+        this.subject = subject;
+        this.content = content;
+    }
+
+	public Email(String uidl, Integer userid, String date, String inbox, String from, Vector<String> to_list, Vector<String> cc_list, Vector<String> bcc_list, String subject, String content) {
+		super();
+		this.uidl = uidl;
+		this.userid = userid;
+		this.date = date;
+		this.inbox = inbox;
+		this.from = from;
+		this.to_list = to_list;
+		this.cc_list = cc_list;
+		this.bcc_list = bcc_list;
+		this.subject = subject;
 		this.content = content;
 	}
 
@@ -93,7 +123,7 @@ public class Email {
                 if (m.find()) {
                     String subject = m.group().substring(2, m.group().length() - 2);
                     LogUtil.i(subject);
-                    theme = CoderUtil.decode(subject);
+                    subject = CoderUtil.decode(subject);
                 }
             } else if (line.startsWith("------")) {
                 is_content_text = false;
@@ -187,6 +217,14 @@ public class Email {
         this.userid = userid;
     }
 
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
 	public String getInbox() {
 		return inbox;
 	}
@@ -195,12 +233,12 @@ public class Email {
 		this.inbox = inbox;
 	}
 
-	public String getTheme() {
-		return theme;
+	public String getSubject() {
+		return subject;
 	}
 
-	public void setTheme(String theme) {
-		this.theme = theme;
+	public void setSubject(String subject) {
+		this.subject = subject;
 	}
 
 	public String getFrom() {
@@ -251,12 +289,12 @@ public class Email {
         to = getToString();
         cc = getCcString();
         bcc = getBccString();
-        return  "From: " + from + "\n" +
+        return  "Date: " + date + "\n" +
+                "From: " + from + "\n" +
                 "To_list: " + to + "\n" +
                 "Cc_list: " + cc + "\n" +
                 "Bcc_list: " + bcc + "\n" +
-                "Theme: " + theme + "\n" +
+                "Subject: " + subject + "\n" +
                 "Content:" + content + "\n";
 	}
-
 }

@@ -62,9 +62,11 @@ public class EmailEdit extends Stage {
     private HBox hbox;
     private Button saveButton;
     private Button sendButton;
+    private HBox phbox;
+    private ProgressBar progressBar;
 
     public EmailEdit(String uidl) {
-        // 通过时间戳来辨别编辑邮件的唯一性
+        // 通过时间来辨别编辑邮件的唯一性
         this.uidl = uidl;
         initEmailClientDB();
         initComponents();
@@ -132,8 +134,6 @@ public class EmailEdit extends Stage {
         GridPane.setConstraints(bccText, 3, 1);
         grid.getChildren().add(bccText);
 
-        // *** from
-
         // *** subject
         subjectLabel = new Label("主题:");
         subjectLabel.setPrefWidth(50);
@@ -150,10 +150,21 @@ public class EmailEdit extends Stage {
         // ** select button
         hbox = new HBox();
         hbox.setSpacing(5);
+        // *** saveButton
         saveButton = new Button("保存");
-        sendButton = new Button("发送");
         hbox.getChildren().add(saveButton);
+        // *** sendButton
+        sendButton = new Button("发送");
         hbox.getChildren().add(sendButton);
+        // *** progressBar
+        phbox = new HBox();
+        phbox.setAlignment(Pos.CENTER_RIGHT);
+        progressBar = new ProgressBar();
+        progressBar.setPrefWidth(120);
+        progressBar.setProgress(0.5f);
+        phbox.getChildren().add(progressBar);
+        HBox.setHgrow(phbox, Priority.ALWAYS);
+        hbox.getChildren().add(phbox);
 
         vbox.getChildren().add(grid);
         vbox.getChildren().add(editor);
@@ -174,6 +185,7 @@ public class EmailEdit extends Stage {
                                     toText.getText(), ccText.getText(), bccText.getText(),
                                     subjectText.getText(), editor.getHtmlText());
             email.setUidl(uidl);
+            email.setDate("test");
             for (User u : users) {
                 if (u.getEmail_addr().equals(fromCombo.getValue())) {
                     email.setUserid(u.getId());
@@ -193,6 +205,22 @@ public class EmailEdit extends Stage {
         });
 
         // 发送邮件
+        sendButton.setOnAction((ActionEvent ev)->{
+
+        });
+
+    }
+
+    private boolean isInputCorrect() {
+        String to = toText.getText();
+        String cc = ccText.getText();
+        String bcc = bccText.getText();
+        String subject = Text.getText();
+        String content = editor.getHtmlText();
+        if (to.equals("") && cc.equals("") && bcc.equals("")) {
+            LogUtil.i("to,cc,bcc empty");
+            return false;
+        }
     }
 
 }
