@@ -191,6 +191,42 @@ public class EmailClientDB {
 		}
 	}
 
+	public List<Email> loadEmails() {
+		List<Email> list = new ArrayList<Email>();
+		Connection connection = null;
+		try {
+			connection = DriverManager.getConnection(db_name);
+			PreparedStatement pre = connection.prepareStatement("select * from email");
+			ResultSet rs = pre.executeQuery();
+			while (rs.next()) {
+				Email email = new Email();
+				email.setUidl(rs.getString("uidl"));
+				email.setUserid(rs.getInt("userid"));
+				email.setDate(rs.getString("date"));
+				email.setInbox(rs.getString("inbox"));
+				email.setFrom(rs.getString("from_addr"));
+				email.setToByString(rs.getString("to_list"));
+				email.setCcByString(rs.getString("cc_list"));
+				email.setBccByString(rs.getString("bcc_list"));
+				email.setSubject(rs.getString("subject"));
+				email.setContent(rs.getString("content"));
+				list.add(email);
+				LogUtil.i("Load email");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (connection != null) {
+					connection.close();
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return list;
+	}
+
 	// load all emails
 	public List<Email> loadEmails(Integer userid, String inbox) {
 		List<Email> list = new ArrayList<Email>();
@@ -247,6 +283,40 @@ public class EmailClientDB {
 			pre.setString(9, email.getSubject());
 			pre.setString(10, email.getContent());
 			pre.executeUpdate();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (connection != null) {
+					connection.close();
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	// insert emails
+	public void insertEmails(List<Email> emails) {
+		Connection connection = null;
+		try {
+			connection = DriverManager.getConnection(db_name);
+			PreparedStatement pre = connection.prepareStatement("insert into email values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+			for (Email email : emails) {
+				pre.setString(1, email.getUidl());
+				pre.setInt(2, email.getUserid());
+				pre.setString(3, email.getDate());
+				pre.setString(4, email.getInbox());
+				pre.setString(5, email.getFrom());
+				pre.setString(6, email.getToString());
+				pre.setString(7, email.getCcString());
+				pre.setString(8, email.getBccString());
+				pre.setString(9, email.getSubject());
+				pre.setString(10, email.getContent());
+				pre.addBatch();
+			}
+			pre.executeBatch();
+			pre.clearBatch();
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {

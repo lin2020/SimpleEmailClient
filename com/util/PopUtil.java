@@ -18,7 +18,7 @@ public class PopUtil {
     // 认证账号
     public static boolean authentication(String server, int port, String user, String pass) {
         try {
-            // create pop socket
+            // 建立连接
             Socket socket = new Socket(server, port);
             BufferedReader in_from_server = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter out_to_server = new PrintWriter(socket.getOutputStream());
@@ -27,7 +27,7 @@ public class PopUtil {
             if (!("+OK".equals(response.substring(0,3)))) {
                 return false;
             }
-            // authentication
+            // 认证登陆
             out_to_server.println("USER " + user);
             out_to_server.flush();
             response = in_from_server.readLine();
@@ -44,7 +44,7 @@ public class PopUtil {
             if (!"+OK".equals(response.substring(0,3))) {
                 return false;
             }
-            // get status
+            // 获取状态
             out_to_server.println("STAT");
             out_to_server.flush();
             response = in_from_server.readLine();
@@ -53,7 +53,7 @@ public class PopUtil {
             if (!"+OK".equals(response.substring(0,3))) {
                 return false;
             }
-            // close connect
+            // 关闭连接
             out_to_server.println("QUIT");
             out_to_server.flush();
             response = in_from_server.readLine();
@@ -74,34 +74,73 @@ public class PopUtil {
         EmailClientDB emailClientDB = EmailClientDB.getInstance();
         List<User> users = emailClientDB.loadUsers();
         for (User u : users) {
-            retrEmails(u);
+            retrEmails(u, new PopCallbackListener() {
+                // 连接服务器
+                @Override
+                public void onConnect() {
+                    LogUtil.i("on connect");
+                }
+                // 检查邮件列表
+                @Override
+                public void onCheck() {
+                    LogUtil.i("on check");
+                }
+                // 下载邮件
+                @Override
+                public void onDownLoad(long total_email_size, long download_email_size,
+                                       int total_email_count, int download_email_count,
+                                       long current_email_size, long current_download_size) {
+                    LogUtil.i("on download");
+                }
+                // 下载完成
+                @Override
+                public void onFinish() {
+                    LogUtil.i("on finish");
+                }
+                // 下载出错
+                @Override
+                public void onError() {
+                    LogUtil.i("on error");
+                }
+                // 取消下载
+                @Override
+                public boolean onCancel() {
+                    LogUtil.i("on cancel");
+                    return true;
+                }
+            });
         }
     }
 
     // 从服务器获取指定用户的所有邮件
-    public static boolean retrEmails(User user) {
+    public static boolean retrEmails(User user, PopCallbackListener listener) {
         EmailClientDB emailClientDB = EmailClientDB.getInstance();
+        List<Email> emails = new ArrayList<Email>();
         String[] addr_str = user.getEmail_addr().split("@");
         String server = "pop." + addr_str[1];
         int port = 110;
         try {
-            // * create pop socket
+
+            listener.onConnect();
+
+            // 建立socket连接
             Socket socket = new Socket(server, port);
             BufferedReader in_from_server = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter out_to_server = new PrintWriter(socket.getOutputStream());
             String response = in_from_server.readLine();
             LogUtil.i("S: " + response);
             if (!("+OK".equals(response.substring(0,3)))) {
+                listener.onError();
                 return false;
             }
-
-            // * authentication
+            // 认证登陆
             out_to_server.println("USER " + user.getEmail_addr());
             out_to_server.flush();
             response = in_from_server.readLine();
             LogUtil.i("C: " + "USER " + user.getEmail_addr());
             LogUtil.i("S: " + response);
             if (!"+OK".equals(response.substring(0,3))) {
+                listener.onError();
                 return false;
             }
             out_to_server.println("PASS " + user.getEmail_pass());
@@ -110,30 +149,34 @@ public class PopUtil {
             LogUtil.i("C: " + "PASS " + user.getEmail_pass());
             LogUtil.i("S: " + response);
             if (!"+OK".equals(response.substring(0,3))) {
+                listener.onError();
                 return false;
             }
-
-            // * get status
+            // 获取邮箱状态
             out_to_server.println("STAT");
             out_to_server.flush();
             response = in_from_server.readLine();
             LogUtil.i("C: " + "STAT");
             LogUtil.i("S: " + response);
             if (!"+OK".equals(response.substring(0,3))) {
+                listener.onError();
                 return false;
             }
 
-            // * get list info
+            listener.onCheck();
+
+            // 获取邮件的大小
             out_to_server.println("LIST");
             out_to_server.flush();
             response = in_from_server.readLine();
             LogUtil.i("C: " + "LIST");
             LogUtil.i("S: " + response);
             if (!"+OK".equals(response.substring(0,3))) {
+                listener.onError();
                 return false;
             }
-            // ** read all list line
-            HashMap<Integer, Integer> data_map = new HashMap<Integer, Integer>();
+            // 从服务器返回的信息中读出邮件列表的大小
+            HashMap<Integer, Long> data_map = new HashMap<Integer, Long>();
             boolean flag = true;
             while (flag) {
                 response = in_from_server.readLine();
@@ -142,20 +185,20 @@ public class PopUtil {
                     flag = false;
                 } else {
                     String[] num_str = response.split("\\s+");
-                    data_map.put(Integer.parseInt(num_str[0]), Integer.parseInt(num_str[1]));
+                    data_map.put(Integer.parseInt(num_str[0]), Long.parseLong(num_str[1]));
                 }
             }
-
-            // * get uidl info
+            // 获取邮件的uidl
             out_to_server.println("UIDL");
             out_to_server.flush();
             response = in_from_server.readLine();
             LogUtil.i("C: " + "UIDL");
             LogUtil.i("S: " + response);
             if (!"+OK".equals(response.substring(0,3))) {
+                listener.onError();
                 return false;
             }
-            // ** read all uidl line
+            // 从服务器返回的信息中读出邮件列表的uidl
             HashMap<Integer, String> uidl_map = new HashMap<Integer, String>();
             flag = true;
             while (flag) {
@@ -168,9 +211,7 @@ public class PopUtil {
                     uidl_map.put(Integer.parseInt(num_str[0]), num_str[1]);
                 }
             }
-
-            // * download emails
-            // ** remove the emails that has been download
+            // 检查邮件列表，将本地存在的邮件从列表中移除
             int uidl_map_size = uidl_map.size();
             for (int i = 1; i <= uidl_map_size; i++) {
                 String uidl = uidl_map.get(i);
@@ -180,7 +221,26 @@ public class PopUtil {
                     data_map.remove(i);
                 }
             }
-            // ** download the emails that has not been download
+
+            // 一共要下载的邮件的数量
+            int total_email_count = uidl_map.size();
+            // 已经下载的邮件的数量
+            int download_email_count = 0;
+            // 一共要下载的所有邮件的大小
+            long total_email_size = 0;
+            // 已经下载的所有邮件的大小
+            long download_email_size = 0;
+            // 当前邮件的大小
+            long current_email_size = 0;
+            // 当前邮件下载的大小
+            long current_download_size = 0;
+            for (Integer key : data_map.keySet()) {
+                total_email_size += data_map.get(key);
+            }
+
+            listener.onDownLoad(total_email_size, download_email_size, total_email_count, download_email_count, current_email_size, current_download_size);
+
+            // 从服务器下载本地没有的邮件
             for (Integer key : data_map.keySet()) {
                 String uidl = uidl_map.get(key);
                 out_to_server.println("RETR " + key);
@@ -189,9 +249,13 @@ public class PopUtil {
                 LogUtil.i("C: RETR " + key);
                 LogUtil.i("S: " + response);
                 if (!"+OK".equals(response.substring(0,3))) {
+                    listener.onError();
                     return false;
                 }
-                // read email info
+                download_email_count++;
+                current_email_size = data_map.get(key);
+                current_download_size = 0;
+                // 读取服务器返回的邮件信息
                 Vector<String> lines = new Vector<String>();
                 flag = true;
                 while (flag) {
@@ -201,25 +265,35 @@ public class PopUtil {
                         flag = false;
                     } else {
                         lines.addElement(response);
+                        current_download_size += response.length() + 1;
+                        download_email_size += response.length() + 1;
+                        listener.onDownLoad(total_email_size, download_email_size, total_email_count, download_email_count, current_email_size, current_download_size);
                     }
                 }
                 Email email = constructEmail(uidl, user.getId(), "收件箱", lines);
-                emailClientDB.insertEmail(email);
+                emails.add(email);
             }
 
-            // * close connect
+            // 关闭连接
             out_to_server.println("QUIT");
             out_to_server.flush();
             response = in_from_server.readLine();
             LogUtil.i("C: " + "QUIT");
             LogUtil.i("S: " + response);
             if (!"+OK".equals(response.substring(0,3))) {
+                listener.onError();
                 return false;
             }
         } catch (Exception e) {
             e.printStackTrace();
+            listener.onError();
             return false;
         }
+        // 将下载下来的邮件保存到数据库中
+        if (!emails.isEmpty()) {
+            emailClientDB.insertEmails(emails);
+        }
+        listener.onFinish();
         return true;
     }
 

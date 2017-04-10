@@ -45,9 +45,9 @@ public class ProgressDialog extends Stage {
     // hbox1
     private HBox hbox1;
     private VBox vbox1;
-    private Label messageLabel;
-    private Label detailsLabel;
+    private Label titleLabel;
     private VBox vbox2;
+    private Label messageLabel;
     private ProgressBar progressBar;
     // separator
     private Separator separator;
@@ -76,18 +76,12 @@ public class ProgressDialog extends Stage {
         vbox1 = new VBox();
         vbox1.setSpacing(7);
         vbox1.setAlignment(Pos.CENTER);
-        // **** messageLabel
-        messageLabel = new Label("message");
-        messageLabel.setTextAlignment(TextAlignment.CENTER);
-        messageLabel.setWrapText(true);
-        messageLabel.setFont(new Font("System Bold", 20));
-        vbox1.getChildren().add(messageLabel);
-        // **** detailsLabel
-        detailsLabel = new Label("details");
-        detailsLabel.setTextAlignment(TextAlignment.CENTER);
-        detailsLabel.setWrapText(true);
-        detailsLabel.setFont(new Font(16));
-        vbox1.getChildren().add(detailsLabel);
+        // **** titleLabel
+        titleLabel = new Label("title");
+        titleLabel.setTextAlignment(TextAlignment.CENTER);
+        titleLabel.setWrapText(true);
+        titleLabel.setFont(new Font("System Bold", 20));
+        vbox1.getChildren().add(titleLabel);
         hbox1.getChildren().add(vbox1);
         // *** vbox2
         vbox2 = new VBox();
@@ -97,6 +91,12 @@ public class ProgressDialog extends Stage {
         progressBar = new ProgressBar();
         progressBar.setPrefWidth(350);
         progressBar.setProgress(0.5f);
+        // **** messageLabel
+        messageLabel = new Label("message");
+        messageLabel.setTextAlignment(TextAlignment.CENTER);
+        messageLabel.setWrapText(true);
+        messageLabel.setFont(new Font(16));
+        vbox2.getChildren().add(messageLabel);
         vbox2.getChildren().add(progressBar);
         HBox.setHgrow(vbox2, Priority.ALWAYS);
         hbox1.getChildren().add(vbox2);
@@ -133,26 +133,28 @@ public class ProgressDialog extends Stage {
         cancel = false;
 
         cancelButton.setOnAction((ActionEvent t)->{
+            hide();
             cancel = true;
         });
     }
 
-    public void cancelListen() {
-        if (cancel) {
-            hide();
-        }
+    public Label getTitleLabel() {
+        return titleLabel;
     }
 
-    public void setMessageText(String message) {
-        messageLabel.setText(message);
+    public Label getMessageLabel() {
+        return messageLabel;
     }
 
-    public void setDetailText(String detail) {
-        detailsLabel.setText(detail);
+    public ProgressBar getProgress() {
+        return progressBar;
     }
 
-    public void setProgress(float progress) {
-        progressBar.setProgress(progress);
+    public Button getCancelButton() {
+        return cancelButton;
     }
 
+    public boolean getCancel(){
+        return cancel;
+    }
 }

@@ -59,14 +59,15 @@ public class EmailClientDBTest {
             LogUtil.i("id = " + u.getId() + " name = " + u.getName() + " addr = " + u.getEmail_addr() + " pass = " + u.getEmail_pass());
         }
         // delete
-        emailClientDB.deleteUser(user1);
+        emailClientDB.deleteUser(user2);
+        emailClientDB.deleteUser(user3);
         users = emailClientDB.loadUsers();
         for (User u : users) {
             LogUtil.i("id = " + u.getId() + " name = " + u.getName() + " addr = " + u.getEmail_addr() + " pass = " + u.getEmail_pass());
         }
         // update
-        user2.setName("lin");
-        emailClientDB.updateUser(user2);
+        user1.setName("linjd");
+        emailClientDB.updateUser(user1);
         users = emailClientDB.loadUsers();
         for (User u : users) {
             LogUtil.i("id = " + u.getId() + " name = " + u.getName() + " addr = " + u.getEmail_addr() + " pass = " + u.getEmail_pass());
