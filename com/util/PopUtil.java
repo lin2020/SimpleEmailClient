@@ -69,51 +69,11 @@ public class PopUtil {
         return true;
     }
 
-    // 从服务器获取所有用户的所有邮件
-    public static void retrAllEmails() {
-        EmailClientDB emailClientDB = EmailClientDB.getInstance();
-        List<User> users = emailClientDB.loadUsers();
-        for (User u : users) {
-            retrEmails(u, new PopCallbackListener() {
-                // 连接服务器
-                @Override
-                public void onConnect() {
-                    LogUtil.i("on connect");
-                }
-                // 检查邮件列表
-                @Override
-                public void onCheck() {
-                    LogUtil.i("on check");
-                }
-                // 下载邮件
-                @Override
-                public void onDownLoad(long total_email_size, long download_email_size,
-                                       int total_email_count, int download_email_count,
-                                       long current_email_size, long current_download_size) {
-                    LogUtil.i("on download");
-                }
-                // 下载完成
-                @Override
-                public void onFinish() {
-                    LogUtil.i("on finish");
-                }
-                // 下载出错
-                @Override
-                public void onError() {
-                    LogUtil.i("on error");
-                }
-                // 取消下载
-                @Override
-                public boolean onCancel() {
-                    LogUtil.i("on cancel");
-                    return true;
-                }
-            });
-        }
-    }
-
     // 从服务器获取指定用户的所有邮件
-    public static boolean retrEmails(User user, PopCallbackListener listener) {
+    // user 下载的用户邮箱
+    // onlyDownloadTop 下载方式，true 表示只下载邮件头，false 表示下载整个邮件
+    // listener 下载状态监听接口
+    public static boolean retrEmails(User user, boolean onlyDownloadTop, PopCallbackListener listener) {
         EmailClientDB emailClientDB = EmailClientDB.getInstance();
         List<Email> emails = new ArrayList<Email>();
         String[] addr_str = user.getEmail_addr().split("@");
@@ -243,14 +203,26 @@ public class PopUtil {
             // 从服务器下载本地没有的邮件
             for (Integer key : data_map.keySet()) {
                 String uidl = uidl_map.get(key);
-                out_to_server.println("RETR " + key);
-                out_to_server.flush();
-                response = in_from_server.readLine();
-                LogUtil.i("C: RETR " + key);
-                LogUtil.i("S: " + response);
-                if (!"+OK".equals(response.substring(0,3))) {
-                    listener.onError();
-                    return false;
+                if (onlyDownloadTop) {
+                    out_to_server.println("TOP " + key + " 1");
+                    out_to_server.flush();
+                    response = in_from_server.readLine();
+                    LogUtil.i("C: TOP " + key + " 1");
+                    LogUtil.i("S: " + response);
+                    if (!"+OK".equals(response.substring(0,3))) {
+                        listener.onError();
+                        return false;
+                    }
+                } else {
+                    out_to_server.println("RETR " + key);
+                    out_to_server.flush();
+                    response = in_from_server.readLine();
+                    LogUtil.i("C: RETR " + key);
+                    LogUtil.i("S: " + response);
+                    if (!"+OK".equals(response.substring(0,3))) {
+                        listener.onError();
+                        return false;
+                    }
                 }
                 download_email_count++;
                 current_email_size = data_map.get(key);

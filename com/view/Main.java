@@ -48,6 +48,7 @@ public class Main extends Application {
     // menu node
     private MenuBar menuBar;
     private Menu setupMenu;
+    private CheckMenuItem onlyDownloadTop;
     // recv menu
     private Menu recvMenu;
     private MenuItem allMailboxs;
@@ -96,7 +97,10 @@ public class Main extends Application {
 
         // ** menu pane
         menuBar = new MenuBar();
+        // *** setupMenu
         setupMenu = new Menu("设置");
+        onlyDownloadTop = new CheckMenuItem("只下载邮件头");
+        setupMenu.getItems().addAll(onlyDownloadTop);
         // *** recvMenu
         recvMenu = new Menu("收邮件");
         allMailboxs = new MenuItem("收取所有邮箱");
@@ -176,7 +180,7 @@ public class Main extends Application {
                 protected Void call() throws Exception {
                     users = emailClientDB.loadUsers();
                     for (User u : users) {
-                        PopUtil.retrEmails(u, new PopCallbackListener() {
+                        PopUtil.retrEmails(u, onlyDownloadTop.isSelected(), new PopCallbackListener() {
                             // 连接服务器
                             @Override
                             public void onConnect() {
@@ -198,9 +202,15 @@ public class Main extends Application {
                                                    int total_email_count, int download_email_count,
                                                    long current_email_size, long current_download_size) {
                                 LogUtil.i("on download");
-                                updateProgress(download_email_size, total_email_size);
-                                updateTitle("正在下载");
-                                updateMessage(u.getEmail_addr() + " 待下载: " + total_email_count + "  已下载: " + download_email_count);
+                                if (onlyDownloadTop.isSelected()) {
+                                    updateProgress(download_email_size, total_email_size);
+                                    updateTitle("正在下载");
+                                    updateMessage(u.getEmail_addr() + " 待下载: " + total_email_count + "  已下载: " + download_email_count);
+                                } else {
+                                    updateProgress(download_email_size, total_email_size);
+                                    updateTitle("正在下载");
+                                    updateMessage(u.getEmail_addr() + " 待下载: " + total_email_count + "  已下载: " + download_email_count);
+                                }
                             }
                             // 下载完成
                             @Override
@@ -254,7 +264,7 @@ public class Main extends Application {
 
                                 @Override
                                 protected Void call() throws Exception {
-                                    PopUtil.retrEmails(u, new PopCallbackListener() {
+                                    PopUtil.retrEmails(u, onlyDownloadTop.isSelected(), new PopCallbackListener() {
                                         // 连接服务器
                                         @Override
                                         public void onConnect() {
@@ -275,9 +285,15 @@ public class Main extends Application {
                                                                int total_email_count, int download_email_count,
                                                                long current_email_size, long current_download_size) {
                                             LogUtil.i("on download");
-                                            updateProgress(download_email_size, total_email_size);
-                                            updateTitle("正在下载");
-                                            updateMessage("待下载: " + total_email_count + "  已下载: " + download_email_count);
+                                            if (onlyDownloadTop.isSelected()) {
+                                                updateProgress(download_email_count, total_email_count);
+                                                updateTitle("正在下载");
+                                                updateMessage("待下载: " + total_email_count + "  已下载: " + download_email_count);
+                                            } else {
+                                                updateProgress(download_email_size, total_email_size);
+                                                updateTitle("正在下载");
+                                                updateMessage("待下载: " + total_email_count + "  已下载: " + download_email_count);
+                                            }
                                         }
                                         // 下载完成
                                         @Override
@@ -317,73 +333,7 @@ public class Main extends Application {
         });
 
         commonMenuItem.setOnAction((ActionEvent t)->{
-            LogUtil.i("htmlMenuItem has been click");
-            User u = new User(1, "linjd", "abc_2020@sohu.com", "abc2020");
-            ProgressDialog progressDialog = new ProgressDialog(u.getEmail_addr());
-
-            Task<Void> progressTask = new Task<Void>(){
-
-                @Override
-                protected void succeeded() {
-                    super.succeeded();
-                    progressDialog.getCancelButton().setText("结束");
-                }
-
-                @Override
-                protected Void call() throws Exception {
-                    PopUtil.retrEmails(u, new PopCallbackListener() {
-                        // 连接服务器
-                        @Override
-                        public void onConnect() {
-                            LogUtil.i("on connect");
-                            updateTitle("正在连接");
-                            updateMessage("");
-                        }
-                        // 检查邮件列表
-                        @Override
-                        public void onCheck() {
-                            LogUtil.i("on check");
-                            updateTitle("正在检查");
-                            updateMessage("");
-                        }
-                        // 下载邮件
-                        @Override
-                        public void onDownLoad(long total_email_size, long download_email_size,
-                                               int total_email_count, int download_email_count,
-                                               long current_email_size, long current_download_size) {
-                            LogUtil.i("on download");
-                            updateProgress(download_email_size, total_email_size);
-                            updateTitle("正在下载");
-                            updateMessage("待下载: " + total_email_count + "  已下载: " + download_email_count);
-                        }
-                        // 下载完成
-                        @Override
-                        public void onFinish() {
-                            LogUtil.i("on finish");
-                            updateProgress(100, 100);
-                            updateTitle("下载完成");
-                        }
-                        // 下载出错
-                        @Override
-                        public void onError() {
-                            LogUtil.i("on error");
-                            updateTitle("下载失败");
-                        }
-                        // 取消下载
-                        @Override
-                        public boolean onCancel() {
-                            LogUtil.i("on cancel");
-                            updateTitle("下载取消");
-                            return progressDialog.getCancel();
-                        }
-                    });
-                    return null;
-                }
-            };
-            progressDialog.getProgress().progressProperty().bind(progressTask.progressProperty());
-            progressDialog.getMessageLabel().textProperty().bind(progressTask.messageProperty());
-            progressDialog.getTitleLabel().textProperty().bind(progressTask.titleProperty());
-            new Thread(progressTask).start();
+            LogUtil.i("commonMenuItem has been click");
         });
 
 
