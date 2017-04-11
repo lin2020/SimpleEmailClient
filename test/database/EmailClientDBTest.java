@@ -59,8 +59,8 @@ public class EmailClientDBTest {
             LogUtil.i("id = " + u.getId() + " name = " + u.getName() + " addr = " + u.getEmail_addr() + " pass = " + u.getEmail_pass());
         }
         // delete
-        emailClientDB.deleteUser(user2);
-        emailClientDB.deleteUser(user3);
+        // emailClientDB.deleteUser(user2);
+        // emailClientDB.deleteUser(user3);
         users = emailClientDB.loadUsers();
         for (User u : users) {
             LogUtil.i("id = " + u.getId() + " name = " + u.getName() + " addr = " + u.getEmail_addr() + " pass = " + u.getEmail_pass());

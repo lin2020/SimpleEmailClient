@@ -63,5 +63,11 @@ public class PopUtilTest {
         for (Email e : emails) {
             LogUtil.i(e.toString());
         }
+        for (Email e : emails) {
+            if (e.getSubject().equals("")) {
+                PopUtil.sendDeleRequest(u, e);
+                emailClientDB.deleteEmail(e);
+            }
+        }
     }
 }

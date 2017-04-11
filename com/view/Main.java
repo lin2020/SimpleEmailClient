@@ -160,64 +160,37 @@ public class Main extends Application {
 
     private void initEvents(Stage primaryStage) {
 
-        // sendMenu.setOnAction(new EventHandler<ActionEvent>() {
-        //     @Override
-        //     public void handle(ActionEvent e) {
-        //         LogUtil.i("sendMenu has been click");
-        //         (new EmailEdit()).show();
-        //     }
-        // });
-
-
         allMailboxs.setOnAction((ActionEvent t)->{
             LogUtil.i("allMailboxs has been click");
-            users = emailClientDB.loadUsers();
-            for (User u : users) {
-                ProgressDialog progressDialog = new ProgressDialog(u);
+            ProgressDialog progressDialog = new ProgressDialog("所有邮箱");
 
-                Task<Void> progressTask = new Task<Void>(){
+            Task<Void> progressTask = new Task<Void>(){
 
-                    @Override
-                    protected void succeeded() {
-                        super.succeeded();
-                        updateTitle("下载完成");
-                        progressDialog.getCancelButton().setText("完成");
-                    }
+                @Override
+                protected void succeeded() {
+                    super.succeeded();
+                    progressDialog.getCancelButton().setText("结束");
+                }
 
-                    @Override
-                    protected void cancelled() {
-                        super.cancelled();
-                        updateTitle("下载取消");
-                        progressDialog.getCancelButton().setText("完成");
-                    }
-
-                    @Override
-                    protected void failed() {
-                        super.failed();
-                        updateTitle("下载失败");
-                        progressDialog.getCancelButton().setText("完成");
-                    }
-
-                    @Override
-                    protected Void call() throws Exception {
+                @Override
+                protected Void call() throws Exception {
+                    users = emailClientDB.loadUsers();
+                    for (User u : users) {
                         PopUtil.retrEmails(u, new PopCallbackListener() {
                             // 连接服务器
                             @Override
                             public void onConnect() {
                                 LogUtil.i("on connect");
+                                updateProgress(ProgressIndicator.INDETERMINATE_PROGRESS, ProgressIndicator.INDETERMINATE_PROGRESS);
                                 updateTitle("正在连接");
-                                updateMessage("");
-                                // progressDialog.getMessageLabel().setText("正在连接");
-                                // progressDialog.getDetailLabel().setText("...");
+                                updateMessage(u.getEmail_addr());
                             }
                             // 检查邮件列表
                             @Override
                             public void onCheck() {
                                 LogUtil.i("on check");
                                 updateTitle("正在检查");
-                                updateMessage("");
-                                // progressDialog.getMessageLabel().setText("正在检查");
-                                // progressDialog.getDetailLabel().setText("...");
+                                updateMessage(u.getEmail_addr());
                             }
                             // 下载邮件
                             @Override
@@ -227,9 +200,7 @@ public class Main extends Application {
                                 LogUtil.i("on download");
                                 updateProgress(download_email_size, total_email_size);
                                 updateTitle("正在下载");
-                                updateMessage("待下载: " + total_email_count + "  已下载: " + download_email_count);
-                                // progressDialog.getMessageLabel().setText("正在下载");
-                                // progressDialog.getDetailLabel().setText("待下载: " + total_email_count + "  已下载: " + download_email_count);
+                                updateMessage(u.getEmail_addr() + " 待下载: " + total_email_count + "  已下载: " + download_email_count);
                             }
                             // 下载完成
                             @Override
@@ -237,39 +208,182 @@ public class Main extends Application {
                                 LogUtil.i("on finish");
                                 updateProgress(100, 100);
                                 updateTitle("下载完成");
-                                // progressDialog.hide();
                             }
                             // 下载出错
                             @Override
                             public void onError() {
                                 LogUtil.i("on error");
-                                // progressDialog.hide();
+                                updateTitle("下载失败");
                             }
                             // 取消下载
                             @Override
                             public boolean onCancel() {
                                 LogUtil.i("on cancel");
+                                updateTitle("下载取消");
                                 return progressDialog.getCancel();
                             }
                         });
-                        return null;
                     }
-                };
-                progressDialog.getProgress().progressProperty().bind(progressTask.progressProperty());
-                progressDialog.getMessageLabel().textProperty().bind(progressTask.messageProperty());
-                progressDialog.getTitleLabel().textProperty().bind(progressTask.titleProperty());
-                new Thread(progressTask).start();
-            }
+                    return null;
+                }
+            };
+            progressDialog.getProgress().progressProperty().bind(progressTask.progressProperty());
+            progressDialog.getMessageLabel().textProperty().bind(progressTask.messageProperty());
+            progressDialog.getTitleLabel().textProperty().bind(progressTask.titleProperty());
+            new Thread(progressTask).start();
         });
 
         specificMailbox.setOnAction((ActionEvent t)->{
             LogUtil.i("specificMailbox has been click");
+            List<User> users = emailClientDB.loadUsers();
+            if (!users.isEmpty()) {
+                final ContextMenu contextMenu = new ContextMenu();
+                for (User u : users) {
+                    MenuItem item = new MenuItem(u.getEmail_addr());
+                    item.setOnAction(new EventHandler<ActionEvent>() {
+                        public void handle(ActionEvent e) {
+                            ProgressDialog progressDialog = new ProgressDialog(u.getEmail_addr());
+
+                            Task<Void> progressTask = new Task<Void>(){
+
+                                @Override
+                                protected void succeeded() {
+                                    super.succeeded();
+                                    progressDialog.getCancelButton().setText("结束");
+                                }
+
+                                @Override
+                                protected Void call() throws Exception {
+                                    PopUtil.retrEmails(u, new PopCallbackListener() {
+                                        // 连接服务器
+                                        @Override
+                                        public void onConnect() {
+                                            LogUtil.i("on connect");
+                                            updateTitle("正在连接");
+                                            updateMessage("");
+                                        }
+                                        // 检查邮件列表
+                                        @Override
+                                        public void onCheck() {
+                                            LogUtil.i("on check");
+                                            updateTitle("正在检查");
+                                            updateMessage("");
+                                        }
+                                        // 下载邮件
+                                        @Override
+                                        public void onDownLoad(long total_email_size, long download_email_size,
+                                                               int total_email_count, int download_email_count,
+                                                               long current_email_size, long current_download_size) {
+                                            LogUtil.i("on download");
+                                            updateProgress(download_email_size, total_email_size);
+                                            updateTitle("正在下载");
+                                            updateMessage("待下载: " + total_email_count + "  已下载: " + download_email_count);
+                                        }
+                                        // 下载完成
+                                        @Override
+                                        public void onFinish() {
+                                            LogUtil.i("on finish");
+                                            updateProgress(100, 100);
+                                            updateTitle("下载完成");
+                                        }
+                                        // 下载出错
+                                        @Override
+                                        public void onError() {
+                                            LogUtil.i("on error");
+                                            updateTitle("下载失败");
+                                        }
+                                        // 取消下载
+                                        @Override
+                                        public boolean onCancel() {
+                                            LogUtil.i("on cancel");
+                                            updateTitle("下载取消");
+                                            return progressDialog.getCancel();
+                                        }
+                                    });
+                                    return null;
+                                }
+                            };
+                            progressDialog.getProgress().progressProperty().bind(progressTask.progressProperty());
+                            progressDialog.getMessageLabel().textProperty().bind(progressTask.messageProperty());
+                            progressDialog.getTitleLabel().textProperty().bind(progressTask.titleProperty());
+                            new Thread(progressTask).start();
+                        }
+                    });
+                    contextMenu.getItems().add(item);
+                }
+                contextMenu.show(menuBar, primaryStage.getX() + 70, primaryStage.getY() + 70);
+                contextMenu.setAutoHide(true);
+            }
         });
 
         commonMenuItem.setOnAction((ActionEvent t)->{
             LogUtil.i("htmlMenuItem has been click");
             User u = new User(1, "linjd", "abc_2020@sohu.com", "abc2020");
-            new ProgressDialog(u);
+            ProgressDialog progressDialog = new ProgressDialog(u.getEmail_addr());
+
+            Task<Void> progressTask = new Task<Void>(){
+
+                @Override
+                protected void succeeded() {
+                    super.succeeded();
+                    progressDialog.getCancelButton().setText("结束");
+                }
+
+                @Override
+                protected Void call() throws Exception {
+                    PopUtil.retrEmails(u, new PopCallbackListener() {
+                        // 连接服务器
+                        @Override
+                        public void onConnect() {
+                            LogUtil.i("on connect");
+                            updateTitle("正在连接");
+                            updateMessage("");
+                        }
+                        // 检查邮件列表
+                        @Override
+                        public void onCheck() {
+                            LogUtil.i("on check");
+                            updateTitle("正在检查");
+                            updateMessage("");
+                        }
+                        // 下载邮件
+                        @Override
+                        public void onDownLoad(long total_email_size, long download_email_size,
+                                               int total_email_count, int download_email_count,
+                                               long current_email_size, long current_download_size) {
+                            LogUtil.i("on download");
+                            updateProgress(download_email_size, total_email_size);
+                            updateTitle("正在下载");
+                            updateMessage("待下载: " + total_email_count + "  已下载: " + download_email_count);
+                        }
+                        // 下载完成
+                        @Override
+                        public void onFinish() {
+                            LogUtil.i("on finish");
+                            updateProgress(100, 100);
+                            updateTitle("下载完成");
+                        }
+                        // 下载出错
+                        @Override
+                        public void onError() {
+                            LogUtil.i("on error");
+                            updateTitle("下载失败");
+                        }
+                        // 取消下载
+                        @Override
+                        public boolean onCancel() {
+                            LogUtil.i("on cancel");
+                            updateTitle("下载取消");
+                            return progressDialog.getCancel();
+                        }
+                    });
+                    return null;
+                }
+            };
+            progressDialog.getProgress().progressProperty().bind(progressTask.progressProperty());
+            progressDialog.getMessageLabel().textProperty().bind(progressTask.messageProperty());
+            progressDialog.getTitleLabel().textProperty().bind(progressTask.titleProperty());
+            new Thread(progressTask).start();
         });
 
 
@@ -283,10 +397,6 @@ public class Main extends Application {
         treeView.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent e) {
-                // String str = treeView.getSelectionModel().getSelectedItem().getValue();
-                // String user = treeView.getSelectionModel().getSelectedItem().getParent().getValue();
-                // int dex = treeView.getSelectionModel().getSelectedIndex();
-                // LogUtil.i(str + user + dex);
                 emails = new ArrayList<Email>();
                 String email_regex = "\\w+(\\.\\w+)*@(\\w)+((\\.\\w+)+)";
                 String treeItemValue = treeView.getSelectionModel().getSelectedItem().getValue();
@@ -328,19 +438,44 @@ public class Main extends Application {
                     MenuItem item1 = new MenuItem("删除");
                     item1.setOnAction(new EventHandler<ActionEvent>() {
                         public void handle(ActionEvent e) {
-                            listData.remove(listView.getSelectionModel().getSelectedItem());
+                            Email email = listView.getSelectionModel().getSelectedItem();
+                            listData.remove(email);
                             listView.setItems(listData);
                             listView.setCellFactory((ListView<Email> l) -> new MyListCell());
+                            emailClientDB.deleteEmail(email);
                             LogUtil.i("删除");
                         }
                     });
-                    MenuItem item2 = new MenuItem("移到垃圾箱");
+                    MenuItem item2 = new MenuItem("彻底删除");
                     item2.setOnAction(new EventHandler<ActionEvent>() {
                         public void handle(ActionEvent e) {
+                            Email email = listView.getSelectionModel().getSelectedItem();
+                            for (User user : users) {
+                                if (user.getId() == email.getUserid()) {
+                                    PopUtil.sendDeleRequest(user, email);
+                                }
+                            }
+                            listData.remove(email);
+                            listView.setItems(listData);
+                            listView.setCellFactory((ListView<Email> l) -> new MyListCell());
+                            emailClientDB.deleteEmail(email);
+                            LogUtil.i("彻底删除");
+                        }
+                    });
+                    MenuItem item3 = new MenuItem("移到垃圾箱");
+                    item3.setOnAction(new EventHandler<ActionEvent>() {
+                        public void handle(ActionEvent e) {
+                            Email email = listView.getSelectionModel().getSelectedItem();
+                            listData.remove(email);
+                            listView.setItems(listData);
+                            listView.setCellFactory((ListView<Email> l) -> new MyListCell());
+                            emailClientDB.deleteEmail(email);
+                            email.setInbox("垃圾箱");
+                            emailClientDB.insertEmail(email);
                             LogUtil.i("移到垃圾箱");
                         }
                     });
-                    contextMenu.getItems().addAll(item1, item2);
+                    contextMenu.getItems().addAll(item1, item2, item3);
                     contextMenu.show(menuBar, e.getScreenX(), e.getScreenY());
                     contextMenu.setAutoHide(true);
                 }
@@ -349,14 +484,42 @@ public class Main extends Application {
 
     }
 
+    // 定义邮件列表的显示格式
     class MyListCell extends ListCell<Email> {
        @Override
        public void updateItem(Email item, boolean empty) {
            super.updateItem(item, empty);
            if (item != null) {
-               Text text = new Text(item.getSubject());
-               // Button btn = new Button("test");
-               setGraphic(text);
+               SimpleDateFormat df_old = new SimpleDateFormat("EE, M MMM yyyy hh:mm:ss Z", Locale.US);  //原来日期格式
+               SimpleDateFormat df_new = new SimpleDateFormat("MM-dd", Locale.US);  //新的日期格式
+
+               String from = item.getFrom();
+               String date = item.getDate();
+               String subject = item.getSubject();
+
+               from = from.split("@")[0];
+
+               try {
+                   date = df_new.format(df_old.parse(item.getDate()));
+               } catch (Exception e) {
+                   e.printStackTrace();
+               }
+
+               VBox root = new VBox();
+               root.setSpacing(8);
+               HBox hbox = new HBox();
+               Label fromLabel = new Label(from);
+               fromLabel.setFont(new Font("System Bold", 16));
+               fromLabel.setPrefWidth(140);
+               Label dateLabel = new Label(date);
+               dateLabel.setFont(new Font(16));
+               dateLabel.setPrefWidth(80);
+               hbox.getChildren().addAll(fromLabel, dateLabel);
+               Label subjectLabel = new Label(subject);
+               subjectLabel.setFont(new Font(14));
+               root.getChildren().add(hbox);
+               root.getChildren().add(subjectLabel);
+               setGraphic(root);
            }
        }
    }

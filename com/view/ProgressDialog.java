@@ -58,12 +58,12 @@ public class ProgressDialog extends Stage {
     private Button cancelButton;
 
 
-    public ProgressDialog(User user) {
-        initComponents(user);
+    public ProgressDialog(String msg) {
+        initComponents(msg);
         initEvents();
     }
 
-    private void initComponents(User user) {
+    private void initComponents(String msg) {
         // * root pane
         root = new VBox();
         root.setSpacing(5);
@@ -110,7 +110,7 @@ public class ProgressDialog extends Stage {
         // ** hbox2
         hbox2 = new HBox();
         // *** addrLabel
-        addrLabel = new Label(user.getEmail_addr());
+        addrLabel = new Label(msg);
         hbox2.getChildren().add(addrLabel);
         // *** spacePane
         spacePane = new Pane();
@@ -123,7 +123,7 @@ public class ProgressDialog extends Stage {
 
         Scene scene = new Scene(root, 500, 150);
 
-        setTitle("收取邮件 - " + user.getEmail_addr());
+        setTitle("收取邮件 - " + msg);
         setScene(scene);
         show();
     }

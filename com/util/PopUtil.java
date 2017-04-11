@@ -364,4 +364,97 @@ public class PopUtil {
         LogUtil.i(email.toString());
         return email;
     }
+
+    // 删除服务器上的邮件
+    public static boolean sendDeleRequest(User user, Email email) {
+        String[] addr_str = user.getEmail_addr().split("@");
+        String server = "pop." + addr_str[1];
+        int port = 110;
+        String uidl = email.getUidl();
+        try {
+            // 建立连接
+            Socket socket = new Socket(server, port);
+            BufferedReader in_from_server = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            PrintWriter out_to_server = new PrintWriter(socket.getOutputStream());
+            String response = in_from_server.readLine();
+            LogUtil.i("S: " + response);
+            if (!"+OK".equals(response.substring(0, 3))) {
+                return false;
+            }
+            // 认证登陆
+            out_to_server.println("USER " + user.getEmail_addr());
+            out_to_server.flush();
+            response = in_from_server.readLine();
+            LogUtil.i("C: " + "USER " + user.getEmail_addr());
+            LogUtil.i("S: " + response);
+            if (!"+OK".equals(response.substring(0, 3))) {
+                return false;
+            }
+            out_to_server.println("PASS " + user.getEmail_pass());
+            out_to_server.flush();
+            response = in_from_server.readLine();
+            LogUtil.i("C: " + "PASS " + user.getEmail_pass());
+            LogUtil.i("S: " + response);
+            if (!"+OK".equals(response.substring(0, 3))) {
+                return false;
+            }
+            // 获取状态
+            out_to_server.println("STAT");
+            out_to_server.flush();
+            response = in_from_server.readLine();
+            LogUtil.i("C: " + "STAT");
+            LogUtil.i("S: " + response);
+            if (!"+OK".equals(response.substring(0,3))) {
+                return false;
+            }
+            // 获取uidl列表
+            out_to_server.println("UIDL");
+            out_to_server.flush();
+            response = in_from_server.readLine();
+            LogUtil.i("C: " + "UIDL");
+            LogUtil.i("S: " + response);
+            if (!"+OK".equals(response.substring(0,3))) {
+                return false;
+            }
+            // 从服务器返回的信息中读出邮件列表的uidl
+            HashMap<Integer, String> uidl_map = new HashMap<Integer, String>();
+            boolean flag = true;
+            while (flag) {
+                response = in_from_server.readLine();
+                LogUtil.i("S: " + response);
+                if (".".equals(response)) {
+                    flag = false;
+                } else {
+                    String[] num_str = response.split("\\s+");
+                    uidl_map.put(Integer.parseInt(num_str[0]), num_str[1]);
+                }
+            }
+            for(Integer key : uidl_map.keySet()) {
+                if (uidl.equals(uidl_map.get(key))) {
+                    // 删除对应的邮件
+                    out_to_server.println("DELE " + key);
+                    out_to_server.flush();
+                    response = in_from_server.readLine();
+                    LogUtil.i("C: " + "DELE " + key);
+                    LogUtil.i("S: " + response);
+                    if (!"+OK".equals(response.substring(0,3))) {
+                        return false;
+                    }
+                    break;
+                }
+            }
+            // 关闭连接
+            out_to_server.println("QUIT");
+            out_to_server.flush();
+            response = in_from_server.readLine();
+            LogUtil.i("C: " + "QUIT");
+            LogUtil.i("S: " + response);
+            if (!"+OK".equals(response.substring(0,3))) {
+                return false;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return true;
+    }
 }
