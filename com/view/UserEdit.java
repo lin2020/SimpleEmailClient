@@ -34,6 +34,7 @@ public class UserEdit extends Stage {
 
     private EmailClientDB emailClientDB;
     private List<User> all_users;
+    private String[] boxName = {"收件箱", "发件箱", "草稿箱", "垃圾箱"};
     private GridPane grid;
     private Text title;
     private Label addr;
@@ -50,33 +51,14 @@ public class UserEdit extends Stage {
     private ContextMenu contextMenu;
     private CustomMenuItem item;
 
-    // @Override
-    // public void start(Stage primaryStage) {
-    //     initEmailClientDB(primaryStage);
-    //     if (all_users.isEmpty()) {
-    //         primaryStage.close();
-    //         new MainStage().show();
-    //     } else {
-    //         initComponents(primaryStage);
-    //         initEvents(primaryStage);
-    //     }
-    // }
-
-    public UserEdit() {
-
-    }
-
-    private void initEmailClientDB(Stage primaryStage) {
-        try {
-            Class.forName("org.sqlite.JDBC");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public UserEdit(Stage primaryStage, TreeView<String> treeView, TreeItem<String> rootNode) {
         emailClientDB = EmailClientDB.getInstance();
         all_users = emailClientDB.loadUsers();
+        initComponents(primaryStage, treeView, rootNode);
+        initEvents(primaryStage, treeView, rootNode);
     }
 
-    private void initComponents(Stage primaryStage) {
+    private void initComponents(Stage primaryStage, TreeView<String> treeView, TreeItem<String> rootNode) {
         grid = new GridPane();
         grid.setAlignment(Pos.CENTER);
         grid.setHgap(10);
@@ -115,13 +97,13 @@ public class UserEdit extends Stage {
         grid.add(hint_list, 1, 2, 1, 5);
 
         scene = new Scene(grid, 400, 250);
-        primaryStage.setScene(scene);
+        setScene(scene);
 
-        primaryStage.setTitle("Email Client");
-        primaryStage.show();
+        setTitle("Email Client");
+        show();
     }
 
-    private void initEvents(Stage primaryStage) {
+    private void initEvents(Stage primaryStage, TreeView<String> treeView, TreeItem<String> rootNode) {
 
         addrField.setOnKeyReleased(new EventHandler<KeyEvent>() {
             @Override
@@ -147,9 +129,19 @@ public class UserEdit extends Stage {
             @Override
             public void handle(ActionEvent e) {
                 if (hasUser(addrField.getText(), pswdField.getText())) {
-                    User user = new User(addrField.getText(), pswdField.getText());
-                    primaryStage.close();
-                    new MainStage().show();
+                    all_users = emailClientDB.loadUsers();
+                    rootNode.setExpanded(true);
+                    for (User u : all_users) {
+                        TreeItem<String> userNode = new TreeItem<> (u.getEmail_addr());
+                        for(String s : boxName) {
+                            TreeItem<String> boxleaf = new TreeItem<> (s);
+                            userNode.getChildren().add(boxleaf);
+                        }
+                        rootNode.getChildren().add(userNode);
+                    }
+                    treeView.setRoot(rootNode);
+                    primaryStage.show();
+                    hide();
                 } else {
                     hint.setFill(Color.FIREBRICK);
                     hint.setText("Email addr or Password error!");
@@ -195,10 +187,7 @@ public class UserEdit extends Stage {
         }
         String[] str = addr.split("@");
         String server = "pop." + str[1];
-        LogUtil.i(server);
-        Pop3 pop = new Pop3(server, addr, pass);
-        LogUtil.i("status" + pop.getStatus());
-        if (pop.getStatus()) {
+        if (PopUtil.authentication(server, 110, addr, pass)) {
             User user = new User(addr, pass);
             emailClientDB.insertUser(user);
             return true;

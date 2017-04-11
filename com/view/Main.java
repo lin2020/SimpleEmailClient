@@ -159,7 +159,11 @@ public class Main extends Application {
         // set and show primary stage
         primaryStage.setTitle("Email Client");
         primaryStage.setScene(scene);
-        primaryStage.show();
+        if (users.isEmpty()) {
+            new UserEdit(primaryStage, treeView, rootNode);
+        } else {
+            primaryStage.show();
+        }
     }
 
     private void initEvents(Stage primaryStage) {
@@ -377,6 +381,15 @@ public class Main extends Application {
         listView.getSelectionModel().selectedItemProperty().addListener(
         (ObservableValue<? extends Email> ov, Email old_val, Email new_val) -> {
             LogUtil.i("happen");
+            Email email = listView.getSelectionModel().getSelectedItem();
+            if (email.getContent().equals("onlyDownloadTop")) {
+                for (User user : users) {
+                    if (user.getId() == email.getUserid()) {
+                        LogUtil.i("download email detail");
+                        PopUtil.sendRetrRequest(user, email);
+                    }
+                }
+            }
         });
 
         listView.setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -472,6 +485,6 @@ public class Main extends Application {
                setGraphic(root);
            }
        }
-   }
+    }
 
 }
