@@ -170,6 +170,11 @@ public class Main extends Application {
 
         allMailboxs.setOnAction((ActionEvent t)->{
             LogUtil.i("allMailboxs has been click");
+
+            if(users.isEmpty()) {
+                return ;
+            }
+
             ProgressDialog progressDialog = new ProgressDialog("所有邮箱");
 
             Task<Void> progressTask = new Task<Void>(){
@@ -343,23 +348,84 @@ public class Main extends Application {
 
         htmlMenuItem.setOnAction((ActionEvent t)->{
             LogUtil.i("htmlMenuItem has been click");
+            if(users.isEmpty()) {
+                return ;
+            }
             SimpleDateFormat df = new SimpleDateFormat("EE, M MMM yyyy hh:mm:ss Z", Locale.US);//设置日期格式
             LogUtil.i(df.format(new Date()));// new Date()为获取当前系统时间
             new EmailEdit(df.format(new Date()).toString());
         });
 
-        treeView.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent e) {
+        treeView.setOnMouseClicked((MouseEvent me)->{
+            if (me.getButton() == MouseButton.SECONDARY) {
+                LogUtil.i("Mouse Click");
+                final ContextMenu contextMenu = new ContextMenu();
+                MenuItem item1 = new MenuItem("删除邮箱");
+                item1.setOnAction((ActionEvent ae)->{
+                    if (treeView.getSelectionModel().getSelectedItem() == null) {
+                        return;
+                    }
+                    String email_regex = "\\w+(\\.\\w+)*@(\\w)+((\\.\\w+)+)";
+                    String treeItemValue = treeView.getSelectionModel().getSelectedItem().getValue();
+                    Pattern p = Pattern.compile(email_regex);
+                    Matcher m = p.matcher(treeItemValue);
+                    if (m == null) {
+                        return ;
+                    }
+                    if (!m.find()) {
+                        LogUtil.i("Click box");
+                        treeItemValue = treeView.getSelectionModel().getSelectedItem().getParent().getValue();
+                    }
+                    users = emailClientDB.loadUsers();
+                    User user = null;
+                    for (User u : users) {
+                        if (u.getEmail_addr().equals(treeItemValue)) {
+                            user = u;
+                            break;
+                        }
+                    }
+                    if (user == null) {
+                        LogUtil.i("can't find user");
+                    } else {
+                        emailClientDB.deleteUser(user);
+                        users = emailClientDB.loadUsers();
+                        rootNode = new TreeItem<> ("user@example.com");
+                        rootNode.setExpanded(true);
+                        for (User u : users) {
+                            TreeItem<String> userNode = new TreeItem<> (u.getEmail_addr());
+                            for(String s : boxName) {
+                                TreeItem<String> boxleaf = new TreeItem<> (s);
+                                userNode.getChildren().add(boxleaf);
+                            }
+                            rootNode.getChildren().add(userNode);
+                        }
+                        treeView.setRoot(rootNode);
+                    }
+                });
+                MenuItem item2 = new MenuItem("添加邮箱");
+                item2.setOnAction((ActionEvent ae)->{
+                    new UserEdit(primaryStage, treeView, rootNode);
+                });
+                contextMenu.getItems().addAll(item1, item2);
+                contextMenu.show(menuBar, me.getScreenX(), me.getScreenY());
+                contextMenu.setAutoHide(true);
+            } else {
+                if (treeView.getSelectionModel().getSelectedItem() == null) {
+                    return ;
+                }
                 emails = new ArrayList<Email>();
                 String email_regex = "\\w+(\\.\\w+)*@(\\w)+((\\.\\w+)+)";
                 String treeItemValue = treeView.getSelectionModel().getSelectedItem().getValue();
                 Pattern p = Pattern.compile(email_regex);
                 Matcher m = p.matcher(treeItemValue);
+                if (m == null) {
+                    return ;
+                }
                 if (!m.find()) {
                     LogUtil.i("Click box");
                     User user = null;
                     String treeNodeValue = treeView.getSelectionModel().getSelectedItem().getParent().getValue();
+                    users = emailClientDB.loadUsers();
                     for (User u : users) {
                         if (u.getEmail_addr().equals(treeNodeValue)) {
                             user = u;
@@ -382,6 +448,9 @@ public class Main extends Application {
         (ObservableValue<? extends Email> ov, Email old_val, Email new_val) -> {
             LogUtil.i("happen");
             Email email = listView.getSelectionModel().getSelectedItem();
+            if (email == null) {
+                return ;
+            }
             if (email.getContent().equals("onlyDownloadTop")) {
                 for (User user : users) {
                     if (user.getId() == email.getUserid()) {
@@ -392,56 +461,47 @@ public class Main extends Application {
             }
         });
 
-        listView.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent e) {
-                if (e.getButton() == MouseButton.SECONDARY) {
-                    LogUtil.i("Mouse Click");
-                    final ContextMenu contextMenu = new ContextMenu();
-                    MenuItem item1 = new MenuItem("删除");
-                    item1.setOnAction(new EventHandler<ActionEvent>() {
-                        public void handle(ActionEvent e) {
-                            Email email = listView.getSelectionModel().getSelectedItem();
-                            listData.remove(email);
-                            listView.setItems(listData);
-                            listView.setCellFactory((ListView<Email> l) -> new MyListCell());
-                            emailClientDB.deleteEmail(email);
-                            LogUtil.i("删除");
+        listView.setOnMouseClicked((MouseEvent me)->{
+            if (me.getButton() == MouseButton.SECONDARY) {
+                LogUtil.i("Mouse Click");
+                final ContextMenu contextMenu = new ContextMenu();
+                MenuItem item1 = new MenuItem("删除");
+                item1.setOnAction((ActionEvent ae)->{
+                    Email email = listView.getSelectionModel().getSelectedItem();
+                    listData.remove(email);
+                    listView.setItems(listData);
+                    listView.setCellFactory((ListView<Email> l) -> new MyListCell());
+                    emailClientDB.deleteEmail(email);
+                    LogUtil.i("删除");
+                });
+                MenuItem item2 = new MenuItem("彻底删除");
+                item2.setOnAction((ActionEvent ae)->{
+                    Email email = listView.getSelectionModel().getSelectedItem();
+                    for (User user : users) {
+                        if (user.getId() == email.getUserid()) {
+                            PopUtil.sendDeleRequest(user, email);
                         }
-                    });
-                    MenuItem item2 = new MenuItem("彻底删除");
-                    item2.setOnAction(new EventHandler<ActionEvent>() {
-                        public void handle(ActionEvent e) {
-                            Email email = listView.getSelectionModel().getSelectedItem();
-                            for (User user : users) {
-                                if (user.getId() == email.getUserid()) {
-                                    PopUtil.sendDeleRequest(user, email);
-                                }
-                            }
-                            listData.remove(email);
-                            listView.setItems(listData);
-                            listView.setCellFactory((ListView<Email> l) -> new MyListCell());
-                            emailClientDB.deleteEmail(email);
-                            LogUtil.i("彻底删除");
-                        }
-                    });
-                    MenuItem item3 = new MenuItem("移到垃圾箱");
-                    item3.setOnAction(new EventHandler<ActionEvent>() {
-                        public void handle(ActionEvent e) {
-                            Email email = listView.getSelectionModel().getSelectedItem();
-                            listData.remove(email);
-                            listView.setItems(listData);
-                            listView.setCellFactory((ListView<Email> l) -> new MyListCell());
-                            emailClientDB.deleteEmail(email);
-                            email.setInbox("垃圾箱");
-                            emailClientDB.insertEmail(email);
-                            LogUtil.i("移到垃圾箱");
-                        }
-                    });
-                    contextMenu.getItems().addAll(item1, item2, item3);
-                    contextMenu.show(menuBar, e.getScreenX(), e.getScreenY());
-                    contextMenu.setAutoHide(true);
-                }
+                    }
+                    listData.remove(email);
+                    listView.setItems(listData);
+                    listView.setCellFactory((ListView<Email> l) -> new MyListCell());
+                    emailClientDB.deleteEmail(email);
+                    LogUtil.i("彻底删除");
+                });
+                MenuItem item3 = new MenuItem("移到垃圾箱");
+                item3.setOnAction((ActionEvent ae)->{
+                    Email email = listView.getSelectionModel().getSelectedItem();
+                    listData.remove(email);
+                    listView.setItems(listData);
+                    listView.setCellFactory((ListView<Email> l) -> new MyListCell());
+                    emailClientDB.deleteEmail(email);
+                    email.setInbox("垃圾箱");
+                    emailClientDB.insertEmail(email);
+                    LogUtil.i("移到垃圾箱");
+                });
+                contextMenu.getItems().addAll(item1, item2, item3);
+                contextMenu.show(menuBar, me.getScreenX(), me.getScreenY());
+                contextMenu.setAutoHide(true);
             }
         });
 

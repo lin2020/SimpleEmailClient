@@ -65,11 +65,11 @@ public class UserEdit extends Stage {
         grid.setVgap(10);
         grid.setPadding(new Insets(25, 25, 25, 25));
 
-        title = new Text("Welcome");
+        title = new Text("添加邮箱");
         title.setFont(Font.font("Tahoma", FontWeight.NORMAL, 24));
         grid.add(title, 0, 0, 2, 1);
 
-        addr = new Label("Email addr:");
+        addr = new Label("Address:");
         grid.add(addr, 0, 1);
 
         addrField = new TextField();
@@ -81,7 +81,7 @@ public class UserEdit extends Stage {
         pswdField = new PasswordField();
         grid.add(pswdField, 1, 2);
 
-        login = new Button("Login");
+        login = new Button("创建");
         hbBtn = new HBox(10);
         hbBtn.setAlignment(Pos.BOTTOM_RIGHT);
         hbBtn.getChildren().add(login);
@@ -99,7 +99,7 @@ public class UserEdit extends Stage {
         scene = new Scene(grid, 400, 250);
         setScene(scene);
 
-        setTitle("Email Client");
+        setTitle("编辑邮箱");
         show();
     }
 
@@ -156,6 +156,7 @@ public class UserEdit extends Stage {
                     addrField.setText(hint_list.getFocusModel().getFocusedItem());
                     LogUtil.i("Enter");
                     hint_list.setVisible(false);
+                    pswdField.requestFocus();
                 }
             }
         });
@@ -182,7 +183,7 @@ public class UserEdit extends Stage {
         }
         for (User u : all_users) {
             if (u.getEmail_addr().equals(addr) && u.getEmail_pass().equals(pass)) {
-                return true;
+                return false;
             }
         }
         String[] str = addr.split("@");
