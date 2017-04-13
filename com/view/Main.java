@@ -345,7 +345,6 @@ public class Main extends Application {
             LogUtil.i("commonMenuItem has been click");
         });
 
-
         htmlMenuItem.setOnAction((ActionEvent t)->{
             LogUtil.i("htmlMenuItem has been click");
             if(users.isEmpty()) {
@@ -438,6 +437,21 @@ public class Main extends Application {
                         emails = emailClientDB.loadEmails(user.getId(), treeItemValue);
                     }
                 }
+                Collections.sort(emails, new Comparator<Email>() {
+                    public int compare(Email email0, Email email1) {
+                        SimpleDateFormat df_old = new SimpleDateFormat("EE, M MMM yyyy hh:mm:ss Z", Locale.US);  //原来日期格式
+                        SimpleDateFormat df_new = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.US);  //新的日期格式
+                        String d0 = null;
+                        String d1 = null;
+                        try {
+                            d0 = df_new.format(df_old.parse(email0.getDate()));
+                            d1 = df_new.format(df_old.parse(email1.getDate()));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        return d1.compareTo(d0);
+                    }
+                });
                 listData = FXCollections.observableArrayList(emails);
                 listView.setItems(listData);
                 listView.setCellFactory((ListView<Email> l) -> new MyListCell());
