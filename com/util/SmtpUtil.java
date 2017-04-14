@@ -135,6 +135,13 @@ public class SmtpUtil {
                     return false;
                 }
             }
+            out_to_server.println("DATA");
+            out_to_server.flush();
+            response = in_from_server.readLine();
+            if (!"354".equals(response.substring(0, 3))) {
+                listener.onError();
+                return false;
+            }
 
             // 构造邮件的报文
             Vector<String> lines = new Vector<String>();
@@ -149,11 +156,11 @@ public class SmtpUtil {
             lines.addElement("Subject: " + "=?GB2312?B?" + CoderUtil.encode(email.getSubject()) + "?=");
             lines.addElement("X-Priority: 3");
             lines.addElement("X-Has-Attach: no");
-            // lines.addElement("X-Mailer: SimpleEmailClient 1, 0, 0, 0[cn]");
+            lines.addElement("X-Mailer: SimpleEmailClient 1, 0, 0, 0[cn]");
             lines.addElement("Mime-Version: 1.0");
             lines.addElement("Message-ID: <" + System.currentTimeMillis() + email.getFrom().split("@")[1] + ">");
             lines.addElement("Content-Type: multipart/alternative;");
-            lines.addElement("boundary=\"----=_001_NextPart464060244226_=----\"");
+            lines.addElement("	boundary=\"----=_001_NextPart464060244226_=----\"");
             lines.addElement("");
             lines.addElement("This is a multi-part message in MIME format.");
             lines.addElement("");
@@ -166,7 +173,7 @@ public class SmtpUtil {
             lines.addElement("");
             lines.addElement("------=_001_NextPart464060244226_=------");
             lines.addElement("Content-Type: text/html;");
-            lines.addElement("	charset=\"us-ascii\"");
+            lines.addElement("  charset=\"GB2312\"");
             lines.addElement("Content-Transfer-Encoding: quoted-printable");
             lines.addElement("");
             lines.addElement(html);
@@ -202,6 +209,8 @@ public class SmtpUtil {
             out_to_server.println("QUIT");
             out_to_server.flush();
             response = in_from_server.readLine();
+            LogUtil.i("C: " + "QUIT");
+            LogUtil.i("S: " + response);
             if (!"221".equals(response.substring(0, 3))) {
                 listener.onError();
                 return false;

@@ -19,13 +19,10 @@ public class SmtpUtilTest {
         Email e = new Email("uidl", 1, date, "发件箱", u.getEmail_addr(), "abc_2020@sohu.com;1780615543@qq.com;", ";", ";", "你好", "你好:\n  这是我的第一封邮件");
 
         String html = "<html><head><meta http-equiv=3D\"content-type\" content=3D\"text/html; charse=\n" +
-                        "t=3Dus-ascii\"><style>body { line-height: 1.5; }body { font-size: 10.5pt; f=\n" +
-                        "ont-family: 'Microsoft YaHei UI'; color: rgb(0, 0, 0); line-height: 1.5; }=\n" +
-                        "</style></head><body>=0A<div><span></span><br></div>=0A<div>test</div><hr =\n" +
-                        "style=3D\"width: 210px; height: 1px;\" color=3D\"#b5c4df\" size=3D\"1\" align=3D=\n" +
-                        "\"left\">=0A<div><span><div style=3D\"MARGIN: 10px; FONT-FAMILY: verdana; FON=\n" +
-                        "T-SIZE: 10pt\"><div>abc_2020@sohu.com</div></div></span></div>=0A</body></h=\n" +
-                        "tml>";
+                        "t=3DGB2312\"><style>body { line-height: 1.5; }body { font-size: 10.5pt; fon=\n" +
+                        "t-family: 'Microsoft YaHei UI'; color: rgb(0, 0, 0); line-height: 1.5; }</=\n" +
+                        "style></head><body>=0A<div><span></span><br></div>=0A<div>=C4=E3=BA=C3</di=\n" +
+                        "v>=0A</body></html>";
 
         // 连接数据库
         Class.forName("org.sqlite.JDBC");
