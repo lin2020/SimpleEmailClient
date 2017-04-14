@@ -163,7 +163,9 @@ public class Email {
         to_list.clear();
         String[] list = to.split(";");
         for (String s : list) {
-            to_list.addElement(s);
+            if (!s.equals("")) {
+                to_list.addElement(s);
+            }
         }
     }
 
@@ -179,7 +181,9 @@ public class Email {
         cc_list.clear();
         String[] list = cc.split(";");
         for (String s : list) {
-            cc_list.addElement(s);
+            if (!s.equals("")) {
+                cc_list.addElement(s);
+            }
         }
     }
 
@@ -195,7 +199,9 @@ public class Email {
         bcc_list.clear();
         String[] list = bcc.split(";");
         for (String s : list) {
-            bcc_list.addElement(s);
+            if (!s.equals("")) {
+                bcc_list.addElement(s);
+            }
         }
     }
 

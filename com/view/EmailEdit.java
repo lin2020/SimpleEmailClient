@@ -26,6 +26,9 @@ import javafx.scene.Parent;
 import javafx.fxml.*;
 import java.util.regex.*;
 import javafx.scene.web.HTMLEditor;
+import java.util.Date;
+import java.text.SimpleDateFormat;
+import javafx.concurrent.*;
 
 import com.lin.database.*;
 import com.lin.model.*;
@@ -63,6 +66,7 @@ public class EmailEdit extends Stage {
     private Button saveButton;
     private Button sendButton;
     private HBox phbox;
+    private Label progressLabel;
     private ProgressBar progressBar;
 
     public EmailEdit(String uidl) {
@@ -158,11 +162,15 @@ public class EmailEdit extends Stage {
         hbox.getChildren().add(sendButton);
         // *** progressBar
         phbox = new HBox();
+        phbox.setSpacing(8);
         phbox.setAlignment(Pos.CENTER_RIGHT);
+        progressLabel = new Label("正在发送");
+        phbox.getChildren().add(progressLabel);
         progressBar = new ProgressBar();
         progressBar.setPrefWidth(120);
         progressBar.setProgress(0.5f);
         phbox.getChildren().add(progressBar);
+        phbox.setVisible(false);
         HBox.setHgrow(phbox, Priority.ALWAYS);
         hbox.getChildren().add(phbox);
 
@@ -181,11 +189,13 @@ public class EmailEdit extends Stage {
 
         // 保存邮件
         saveButton.setOnAction((ActionEvent ev)->{
+            SimpleDateFormat df = new SimpleDateFormat("E, M MMM yyyy hh:mm:ss Z", Locale.US);
+            String date = df.format(new Date());
             Email email = new Email(fromCombo.getValue(),
                                     toText.getText(), ccText.getText(), bccText.getText(),
                                     subjectText.getText(), editor.getHtmlText());
             email.setUidl(uidl);
-            email.setDate("test");
+            email.setDate(date);
             for (User u : users) {
                 if (u.getEmail_addr().equals(fromCombo.getValue())) {
                     email.setUserid(u.getId());
@@ -206,7 +216,72 @@ public class EmailEdit extends Stage {
 
         // 发送邮件
         sendButton.setOnAction((ActionEvent ev)->{
+            if (isInputCorrect()) {
+                SimpleDateFormat df = new SimpleDateFormat("E, M MMM yyyy hh:mm:ss Z", Locale.US);
+                String date = df.format(new Date());
+                Email email = new Email(fromCombo.getValue(),
+                                        toText.getText(), ccText.getText(), bccText.getText(),
+                                        subjectText.getText(), editor.getHtmlText());
+                email.setUidl(uidl);
+                email.setDate(date);
+                for (User u : users) {
+                    if (u.getEmail_addr().equals(fromCombo.getValue())) {
+                        email.setUserid(u.getId());
+                    }
+                }
+                email.setInbox("发件箱");
+                String html = editor.getHtmlText();
 
+                phbox.setVisible(true);
+
+                Task<Void> sendEmailTask = new Task<Void>() {
+
+                    @Override
+                    protected void succeeded() {
+                        super.succeeded();
+                        phbox.setVisible(false);
+                    }
+
+                    @Override
+                    protected Void call() throws Exception {
+                        SmtpUtil.sendEmail(email, html, new SmtpCallbackListener() {
+                            // 开始连接
+                            public void onConnect() {
+                                LogUtil.i("on connect");
+                                updateMessage("正在连接");
+                                updateProgress(ProgressIndicator.INDETERMINATE_PROGRESS, ProgressIndicator.INDETERMINATE_PROGRESS);
+                            }
+                            // 认证登录
+                            public void onCheck() {
+                                LogUtil.i("on check");
+                                updateMessage("正在验证");
+                            }
+                            // 正在发送
+                            public void onSend(long send_email_size, long total_email_size) {
+                                updateMessage("正在发送");
+                                updateProgress(send_email_size, total_email_size);
+                                // LogUtil.i("on send");
+                                // LogUtil.i("send_email_size: " + send_email_size + " total_email_size: " + total_email_size);
+                            }
+                            // 发送成功
+                            public void onFinish() {
+                                LogUtil.i("on finish");
+                                updateMessage("发送成功");
+                                emailClientDB.insertEmail(email);
+                            }
+                            // 发送失败
+                            public void onError() {
+                                LogUtil.i("on error");
+                                updateMessage("发送失败");
+                            }
+                        });
+                        return null;
+                    }
+                };
+                progressBar.progressProperty().bind(sendEmailTask.progressProperty());
+                progressLabel.textProperty().bind(sendEmailTask.messageProperty());
+                new Thread(sendEmailTask).start();
+            }
         });
 
     }
@@ -215,12 +290,13 @@ public class EmailEdit extends Stage {
         String to = toText.getText();
         String cc = ccText.getText();
         String bcc = bccText.getText();
-        String subject = Text.getText();
+        String subject = subjectText.getText();
         String content = editor.getHtmlText();
         if (to.equals("") && cc.equals("") && bcc.equals("")) {
             LogUtil.i("to,cc,bcc empty");
             return false;
         }
+        return true;
     }
 
 }
