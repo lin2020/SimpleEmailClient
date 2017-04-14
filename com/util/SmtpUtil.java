@@ -1,0 +1,217 @@
+package com.lin.util;
+
+import java.util.*;
+import java.util.regex.*;
+import java.util.*;
+import java.net.Socket;
+import java.io.InputStreamReader;
+import java.io.BufferedReader;
+import java.io.PrintWriter;
+import java.io.IOException;
+import java.lang.System;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import com.lin.util.*;
+import com.lin.model.*;
+import com.lin.database.*;
+
+public class SmtpUtil {
+
+    public static boolean sendEmail(Email email, String html, SmtpCallbackListener listener) {
+        String server = "smtp." + email.getFrom().split("@")[1];
+        int port = 25;
+        EmailClientDB emailClientDB = EmailClientDB.getInstance();
+        List<User> users = emailClientDB.loadUsers();
+        User user = null;
+        for (User u : users) {
+            if (u.getEmail_addr().equals(email.getFrom())) {
+                user = u;
+            }
+        }
+        if (user == null) {
+            listener.onError();
+            return false;
+        }
+        try {
+
+            listener.onConnect();
+
+            // 建立连接
+            Socket sock = new Socket(server, port);
+            BufferedReader in_from_server = new BufferedReader(new InputStreamReader(sock.getInputStream()));
+            PrintWriter out_to_server = new PrintWriter(sock.getOutputStream());
+            String response = in_from_server.readLine();
+            LogUtil.i("S: " + response);
+            if (!"220".equals(response.substring(0, 3))) {
+                listener.onError();
+                return false;
+            }
+
+            listener.onCheck();
+
+            // 验证登录
+            out_to_server.println("EHLO " + server);
+            out_to_server.flush();
+            response = in_from_server.readLine();
+            LogUtil.i("C: " + "EHLO " + server);
+            LogUtil.i("S: " + response);
+            if (!"250".equals(response.substring(0, 3))) {
+                listener.onError();
+                return false;
+            }
+            response = in_from_server.readLine();
+            response = in_from_server.readLine();
+            out_to_server.println("AUTH LOGIN");
+            out_to_server.flush();
+            response = in_from_server.readLine();
+            LogUtil.i("C: " + "AUTH LOGIN");
+            LogUtil.i("S: " + response);
+            if (!"334".equals(response.substring(0, 3))) {
+                listener.onError();
+                return false;
+            }
+            out_to_server.println(CoderUtil.encode(user.getEmail_addr().split("@")[0]));
+            out_to_server.flush();
+            response = in_from_server.readLine();
+            LogUtil.i("C: " + CoderUtil.encode(user.getEmail_addr().split("@")[0]));
+            LogUtil.i("S: " + response);
+            if (!"334".equals(response.substring(0, 3))) {
+                listener.onError();
+                return false;
+            }
+            out_to_server.println(CoderUtil.encode(user.getEmail_pass()));
+            out_to_server.flush();
+            response = in_from_server.readLine();
+            LogUtil.i("C: " + CoderUtil.encode(user.getEmail_pass()));
+            LogUtil.i("S: " + response);
+            if (!"235".equals(response.substring(0, 3))) {
+                listener.onError();
+                return false;
+            }
+
+            // 输入邮件的发送者
+            out_to_server.println("MAIL FROM: <" + email.getFrom() + ">");
+            out_to_server.flush();
+            response = in_from_server.readLine();
+            LogUtil.i("C: " + "MAIL FROM: <" + email.getFrom() + ">");
+            LogUtil.i("S: " + response);
+            if (!"250".equals(response.substring(0, 3))) {
+                listener.onError();
+                return false;
+            }
+
+            // 输入邮件的接收者
+            for (String to : email.getTo_list()) {
+                out_to_server.println("RCPT TO: <" + to + ">");
+                out_to_server.flush();
+                response = in_from_server.readLine();
+                LogUtil.i("C: " + "RCPT TO: <" + to + ">");
+                LogUtil.i("S: " + response);
+                if (!"250".equals(response.substring(0, 3))) {
+                    listener.onError();
+                    return false;
+                }
+            }
+            for (String cc : email.getCc_list()) {
+                out_to_server.println("RCPT TO: <" + cc + ">");
+                out_to_server.flush();
+                response = in_from_server.readLine();
+                LogUtil.i("C: " + "RCPT TO: <" + cc + ">");
+                LogUtil.i("S: " + response);
+                if (!"250".equals(response.substring(0, 3))) {
+                    listener.onError();
+                    return false;
+                }
+            }
+            for (String bcc : email.getBcc_list()) {
+                out_to_server.println("RCPT TO: <" + bcc + ">");
+                out_to_server.flush();
+                response = in_from_server.readLine();
+                LogUtil.i("C: " + "RCPT TO: <" + bcc + ">");
+                LogUtil.i("S: " + response);
+                if (!"250".equals(response.substring(0, 3))) {
+                    listener.onError();
+                    return false;
+                }
+            }
+
+            // 构造邮件的报文
+            Vector<String> lines = new Vector<String>();
+            lines.addElement("Date: " + email.getDate());
+            lines.addElement("From: <" + email.getFrom() + ">");
+            for (String to : email.getTo_list()) {
+                lines.addElement("To: <" + to + ">");
+            }
+            for (String cc : email.getCc_list()) {
+                lines.addElement("Cc: <" + cc + ">");
+            }
+            lines.addElement("Subject: " + "=?GB2312?B?" + CoderUtil.encode(email.getSubject()) + "?=");
+            lines.addElement("X-Priority: 3");
+            lines.addElement("X-Has-Attach: no");
+            // lines.addElement("X-Mailer: SimpleEmailClient 1, 0, 0, 0[cn]");
+            lines.addElement("Mime-Version: 1.0");
+            lines.addElement("Message-ID: <" + System.currentTimeMillis() + email.getFrom().split("@")[1] + ">");
+            lines.addElement("Content-Type: multipart/alternative;");
+            lines.addElement("boundary=\"----=_001_NextPart464060244226_=----\"");
+            lines.addElement("");
+            lines.addElement("This is a multi-part message in MIME format.");
+            lines.addElement("");
+            lines.addElement("------=_001_NextPart464060244226_=----");
+            lines.addElement("Content-Type: text/plain;");
+            lines.addElement("	charset=\"GB2312\"");
+            lines.addElement("Content-Transfer-Encoding: base64");
+            lines.addElement("");
+            lines.addElement(CoderUtil.encode(email.getContent()));
+            lines.addElement("");
+            lines.addElement("------=_001_NextPart464060244226_=------");
+            lines.addElement("Content-Type: text/html;");
+            lines.addElement("	charset=\"us-ascii\"");
+            lines.addElement("Content-Transfer-Encoding: quoted-printable");
+            lines.addElement("");
+            lines.addElement(html);
+            lines.addElement("------=_001_NextPart464060244226_=------");
+            lines.addElement("");
+            lines.addElement(".");
+
+            // 统计报文的大小
+            long total_email_size = 0;
+            long send_email_size = 0;
+            for (String s : lines) {
+                total_email_size += s.length();
+            }
+
+            listener.onSend(send_email_size, total_email_size);
+
+            // 发送报文
+            for (String s : lines) {
+                out_to_server.println(s);
+                out_to_server.flush();
+                LogUtil.i(s);
+                send_email_size += s.length();
+                listener.onSend(send_email_size, total_email_size);
+            }
+            response = in_from_server.readLine();
+            LogUtil.i("S: " + response);
+            if (!"250".equals(response.substring(0, 3))) {
+                listener.onError();
+                return false;
+            }
+
+            // 关闭连接
+            out_to_server.println("QUIT");
+            out_to_server.flush();
+            response = in_from_server.readLine();
+            if (!"221".equals(response.substring(0, 3))) {
+                listener.onError();
+                return false;
+            }
+        } catch (Exception e) {
+            listener.onError();
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+}

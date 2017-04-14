@@ -1,5 +1,5 @@
 package com.lin.util;
-
+// pop 接收邮件的回调接口
 public interface PopCallbackListener {
     // 连接服务器
     void onConnect();

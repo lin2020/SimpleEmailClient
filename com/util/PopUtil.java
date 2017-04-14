@@ -313,6 +313,8 @@ public class PopUtil {
                 Matcher m = p.matcher(line);
                 if (m.find()) {
                     subject = CoderUtil.decode(m.group().substring(2, m.group().length() - 2));
+                } else {
+                    subject = line.substring(9);
                 }
             } else if (line.startsWith("------")) {
                 is_content_text = false;
