@@ -350,7 +350,7 @@ public class Main extends Application {
             if(users.isEmpty()) {
                 return ;
             }
-            SimpleDateFormat df = new SimpleDateFormat("EE, M MMM yyyy hh:mm:ss Z", Locale.US);//设置日期格式
+            SimpleDateFormat df = new SimpleDateFormat("EE, dd MMM yyyy hh:mm:ss Z", Locale.US);//设置日期格式
             LogUtil.i(df.format(new Date()));// new Date()为获取当前系统时间
             new EmailEdit(df.format(new Date()).toString());
         });
@@ -434,12 +434,13 @@ public class Main extends Application {
                     if (user == null) {
                         LogUtil.i("can't find user");
                     } else {
+                        LogUtil.i("find user");
                         emails = emailClientDB.loadEmails(user.getId(), treeItemValue);
                     }
                 }
                 Collections.sort(emails, new Comparator<Email>() {
                     public int compare(Email email0, Email email1) {
-                        SimpleDateFormat df_old = new SimpleDateFormat("EE, M MMM yyyy hh:mm:ss Z", Locale.US);  //原来日期格式
+                        SimpleDateFormat df_old = new SimpleDateFormat("EE, dd MMM yyyy hh:mm:ss Z", Locale.US);  //原来日期格式
                         SimpleDateFormat df_new = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.US);  //新的日期格式
                         String d0 = null;
                         String d1 = null;
@@ -527,7 +528,7 @@ public class Main extends Application {
        public void updateItem(Email item, boolean empty) {
            super.updateItem(item, empty);
            if (item != null) {
-               SimpleDateFormat df_old = new SimpleDateFormat("EE, M MMM yyyy hh:mm:ss Z", Locale.US);  //原来日期格式
+               SimpleDateFormat df_old = new SimpleDateFormat("EE, dd MMM yyyy hh:mm:ss Z", Locale.US);  //原来日期格式
                SimpleDateFormat df_new = new SimpleDateFormat("MM-dd", Locale.US);  //新的日期格式
 
                String from = item.getFrom();

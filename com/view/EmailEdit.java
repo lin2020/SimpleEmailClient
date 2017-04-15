@@ -189,7 +189,7 @@ public class EmailEdit extends Stage {
 
         // 保存邮件
         saveButton.setOnAction((ActionEvent ev)->{
-            SimpleDateFormat df = new SimpleDateFormat("E, M MMM yyyy hh:mm:ss Z", Locale.US);
+            SimpleDateFormat df = new SimpleDateFormat("E, dd MMM yyyy hh:mm:ss Z", Locale.US);
             String date = df.format(new Date());
             Email email = new Email(fromCombo.getValue(),
                                     toText.getText(), ccText.getText(), bccText.getText(),
@@ -217,11 +217,12 @@ public class EmailEdit extends Stage {
         // 发送邮件
         sendButton.setOnAction((ActionEvent ev)->{
             if (isInputCorrect()) {
-                SimpleDateFormat df = new SimpleDateFormat("E, M MMM yyyy hh:mm:ss Z", Locale.US);
+                SimpleDateFormat df = new SimpleDateFormat("E, dd MMM yyyy hh:mm:ss Z", Locale.US);
                 String date = df.format(new Date());
+                LogUtil.i(date);
                 Email email = new Email(fromCombo.getValue(),
                                         toText.getText(), ccText.getText(), bccText.getText(),
-                                        subjectText.getText(), editor.getHtmlText());
+                                        subjectText.getText(), CoderUtil.htmltoTxt(editor.getHtmlText()));
                 email.setUidl(uidl);
                 email.setDate(date);
                 for (User u : users) {
@@ -239,7 +240,6 @@ public class EmailEdit extends Stage {
                     @Override
                     protected void succeeded() {
                         super.succeeded();
-                        phbox.setVisible(false);
                     }
 
                     @Override

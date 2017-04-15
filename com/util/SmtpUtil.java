@@ -220,6 +220,7 @@ public class SmtpUtil {
             e.printStackTrace();
             return false;
         }
+        listener.onFinish();
         return true;
     }
 
