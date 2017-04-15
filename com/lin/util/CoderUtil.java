@@ -5,7 +5,7 @@ import sun.misc.*;
 
 public class CoderUtil {
 
-    // html to txt
+    // change html to txt
     public static String htmltoTxt(String html) {
         // 去掉换行
         html = html.replaceAll("\r\n|\n|\r", "");
@@ -28,7 +28,7 @@ public class CoderUtil {
         // 去掉其他标签
         html = html.replaceAll("<[^>]+>", "");
         html = html.replaceAll("</[^>]+>", "");
-        html = html.replaceAll("&nbsp;", " ");
+        html = html.replaceAll("&nbsp;", "");
         LogUtil.i(html);
         return html.trim();
     }

@@ -32,7 +32,6 @@ import javafx.concurrent.*;
 
 import com.lin.database.*;
 import com.lin.model.*;
-import com.lin.protocol.*;
 import com.lin.util.*;
 import com.lin.view.*;
 
@@ -260,8 +259,6 @@ public class EmailEdit extends Stage {
                             public void onSend(long send_email_size, long total_email_size) {
                                 updateMessage("正在发送");
                                 updateProgress(send_email_size, total_email_size);
-                                // LogUtil.i("on send");
-                                // LogUtil.i("send_email_size: " + send_email_size + " total_email_size: " + total_email_size);
                             }
                             // 发送成功
                             public void onFinish() {

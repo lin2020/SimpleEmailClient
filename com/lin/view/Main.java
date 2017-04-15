@@ -30,7 +30,6 @@ import javafx.concurrent.*;
 
 import com.lin.database.*;
 import com.lin.model.*;
-import com.lin.protocol.*;
 import com.lin.util.*;
 import com.lin.view.*;
 

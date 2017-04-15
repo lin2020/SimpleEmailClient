@@ -25,7 +25,6 @@ import javafx.scene.input.KeyCode;
 
 import com.lin.view.*;
 import com.lin.util.*;
-import com.lin.protocol.*;
 import com.lin.model.*;
 import com.lin.database.*;
 
