@@ -128,17 +128,13 @@ public class UserEdit extends Stage {
             @Override
             public void handle(ActionEvent e) {
                 if (hasUser(addrField.getText(), pswdField.getText())) {
-                    all_users = emailClientDB.loadUsers();
-                    rootNode.setExpanded(true);
-                    for (User u : all_users) {
-                        TreeItem<String> userNode = new TreeItem<> (u.getEmail_addr());
-                        for(String s : boxName) {
-                            TreeItem<String> boxleaf = new TreeItem<> (s);
-                            userNode.getChildren().add(boxleaf);
-                        }
-                        rootNode.getChildren().add(userNode);
+                    User user = new User(addrField.getText(), pswdField.getText());
+                    TreeItem<String> userNode = new TreeItem<> (user.getEmail_addr());
+                    for (String s : boxName) {
+                        TreeItem<String> boxleaf = new TreeItem<> (s);
+                        userNode.getChildren().add(boxleaf);
                     }
-                    treeView.setRoot(rootNode);
+                    rootNode.getChildren().add(userNode);
                     primaryStage.show();
                     hide();
                 } else {
