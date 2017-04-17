@@ -73,13 +73,13 @@ public class Main extends Application {
     private Separator separator1;
     private GridPane gridPane;
     private Label fromLabel;
-    private Text fromText;
+    private Label fromText;
     private Label toLabel;
-    private Text toText;
+    private Label toText;
     private Label ccLabel;
-    private Text ccText;
+    private Label ccText;
     private Label dateLabel;
-    private Text dateText;
+    private Label dateText;
     private Separator separator2;
     private Label contentLabel;
     private Separator separator3;
@@ -166,6 +166,7 @@ public class Main extends Application {
 
         // **** email subject
         subjectLabel = new Label("主题");
+        subjectLabel.setWrapText(true);
         subjectLabel.setFont(new Font("Arial", 24));
         contentBox.getChildren().add(subjectLabel);
 
@@ -179,24 +180,26 @@ public class Main extends Application {
         fromLabel.setAlignment(Pos.TOP_LEFT);
         fromLabel.setTextFill(Color.DARKGRAY);
         GridPane.setConstraints(fromLabel, 0, 0);
-        fromText = new Text("1780615543@qq.com");
+        fromText = new Label("1780615543@qq.com");
         GridPane.setConstraints(fromText, 1, 0);
         toLabel = new Label("收件人: ");
         toLabel.setAlignment(Pos.TOP_LEFT);
         toLabel.setTextFill(Color.DARKGRAY);
         GridPane.setConstraints(toLabel, 0, 1);
-        toText = new Text("abc_2020@sohu.com");
+        toText = new Label("abc_2020@sohu.com");
+        toText.setWrapText(true);
         GridPane.setConstraints(toText, 1, 1);
         ccLabel = new Label("抄送: ");
         ccLabel.setAlignment(Pos.TOP_LEFT);
         ccLabel.setTextFill(Color.DARKGRAY);
         GridPane.setConstraints(ccLabel, 0, 2);
-        ccText = new Text("15172323141@163.com");
+        ccText = new Label("15172323141@163.com");
+        ccText.setWrapText(true);
         GridPane.setConstraints(ccText, 1, 2);
         dateLabel = new Label("时间: ");
         dateLabel.setTextFill(Color.DARKGRAY);
         GridPane.setConstraints(dateLabel, 0, 3);
-        dateText = new Text("2017年4月17日 19:55");
+        dateText = new Label("2017年4月17日 19:55");
         GridPane.setConstraints(dateText, 1, 3);
         gridPane.getChildren().addAll(fromLabel, fromText, toLabel, toText, ccLabel, ccText, dateLabel, dateText);
         contentBox.getChildren().add(gridPane);
@@ -206,6 +209,7 @@ public class Main extends Application {
 
         // **** email content
         contentLabel = new Label("正文");
+        contentLabel.setWrapText(true);
         contentLabel.setPadding(new Insets(0, 0, 8, 8));
         contentBox.getChildren().add(contentLabel);
 
@@ -587,6 +591,7 @@ public class Main extends Application {
                     listView.setCellFactory((ListView<Email> l) -> new MyListCell());
                     emailClientDB.deleteEmail(email);
                     LogUtil.i("删除");
+                    contentBox.setVisible(false);
                 });
                 MenuItem item2 = new MenuItem("彻底删除");
                 item2.setOnAction((ActionEvent ae)->{
@@ -601,6 +606,7 @@ public class Main extends Application {
                     listView.setCellFactory((ListView<Email> l) -> new MyListCell());
                     emailClientDB.deleteEmail(email);
                     LogUtil.i("彻底删除");
+                    contentBox.setVisible(false);
                 });
                 MenuItem item3 = new MenuItem("移到垃圾箱");
                 item3.setOnAction((ActionEvent ae)->{
@@ -612,11 +618,26 @@ public class Main extends Application {
                     email.setInbox("垃圾箱");
                     emailClientDB.insertEmail(email);
                     LogUtil.i("移到垃圾箱");
+                    contentBox.setVisible(false);
                 });
                 contextMenu.getItems().addAll(item1, item2, item3);
                 contextMenu.show(menuBar, me.getScreenX(), me.getScreenY());
                 contextMenu.setAutoHide(true);
             }
+        });
+
+        reButton.setOnAction((ActionEvent ae)->{
+            SimpleDateFormat df = new SimpleDateFormat("EE, dd MMM yyyy hh:mm:ss Z", Locale.US);//设置日期格式
+            LogUtil.i(df.format(new Date()));// new Date()为获取当前系统时间
+            Email email = listView.getSelectionModel().getSelectedItem();
+            new EmailEdit(df.format(new Date()).toString(), email, "回复: ");
+        });
+
+        fwButton.setOnAction((ActionEvent ae)->{
+            SimpleDateFormat df = new SimpleDateFormat("EE, dd MMM yyyy hh:mm:ss Z", Locale.US);//设置日期格式
+            LogUtil.i(df.format(new Date()));// new Date()为获取当前系统时间
+            Email email = listView.getSelectionModel().getSelectedItem();
+            new EmailEdit(df.format(new Date()).toString(), email, "转发: ");
         });
 
     }

@@ -76,6 +76,18 @@ public class EmailEdit extends Stage {
         initEvents();
     }
 
+    public EmailEdit(String uidl, Email email, String type) {
+        this.uidl = uidl;
+        initEmailClientDB();
+        initComponents();
+        initEvents();
+        if (type.equals("回复: ")) {
+            toText.setText(email.getFrom());
+        }
+        subjectText.setText(type + email.getSubject());
+        editor.setHtmlText(CoderUtil.getHtml(email));
+    }
+
     private void initEmailClientDB() {
         emailClientDB = EmailClientDB.getInstance();
         users = emailClientDB.loadUsers();
