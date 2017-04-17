@@ -27,6 +27,7 @@ import javafx.scene.Parent;
 import javafx.fxml.*;
 import java.util.regex.*;
 import javafx.concurrent.*;
+import javafx.scene.effect.BoxBlur;
 
 import com.lin.database.*;
 import com.lin.model.*;
@@ -68,7 +69,23 @@ public class Main extends Application {
     private ObservableList<Email> listData;
     // content pane
     private VBox contentBox;
-
+    private Label subjectLabel;
+    private Separator separator1;
+    private GridPane gridPane;
+    private Label fromLabel;
+    private Text fromText;
+    private Label toLabel;
+    private Text toText;
+    private Label ccLabel;
+    private Text ccText;
+    private Label dateLabel;
+    private Text dateText;
+    private Separator separator2;
+    private Label contentLabel;
+    private Separator separator3;
+    private HBox refwBox;
+    private Button reButton;
+    private Button fwButton;
 
     @Override
     public void start(Stage primaryStage) {
@@ -144,7 +161,66 @@ public class Main extends Application {
 
         // ***contentBox
         contentBox = new VBox();
+        contentBox.setSpacing(8);
+        contentBox.setPadding(new Insets(8, 8, 8, 8));
 
+        // **** email subject
+        subjectLabel = new Label("主题");
+        subjectLabel.setFont(new Font("Arial", 24));
+        contentBox.getChildren().add(subjectLabel);
+
+        separator1 = new Separator();
+        contentBox.getChildren().add(separator1);
+
+        // **** email info
+        gridPane = new GridPane();
+        gridPane.setVgap(8);
+        fromLabel = new Label("发件人: ");
+        fromLabel.setAlignment(Pos.TOP_LEFT);
+        fromLabel.setTextFill(Color.DARKGRAY);
+        GridPane.setConstraints(fromLabel, 0, 0);
+        fromText = new Text("1780615543@qq.com");
+        GridPane.setConstraints(fromText, 1, 0);
+        toLabel = new Label("收件人: ");
+        toLabel.setAlignment(Pos.TOP_LEFT);
+        toLabel.setTextFill(Color.DARKGRAY);
+        GridPane.setConstraints(toLabel, 0, 1);
+        toText = new Text("abc_2020@sohu.com");
+        GridPane.setConstraints(toText, 1, 1);
+        ccLabel = new Label("抄送: ");
+        ccLabel.setAlignment(Pos.TOP_LEFT);
+        ccLabel.setTextFill(Color.DARKGRAY);
+        GridPane.setConstraints(ccLabel, 0, 2);
+        ccText = new Text("15172323141@163.com");
+        GridPane.setConstraints(ccText, 1, 2);
+        dateLabel = new Label("时间: ");
+        dateLabel.setTextFill(Color.DARKGRAY);
+        GridPane.setConstraints(dateLabel, 0, 3);
+        dateText = new Text("2017年4月17日 19:55");
+        GridPane.setConstraints(dateText, 1, 3);
+        gridPane.getChildren().addAll(fromLabel, fromText, toLabel, toText, ccLabel, ccText, dateLabel, dateText);
+        contentBox.getChildren().add(gridPane);
+
+        separator2 = new Separator();
+        contentBox.getChildren().add(separator2);
+
+        // **** email content
+        contentLabel = new Label("正文");
+        contentLabel.setPadding(new Insets(0, 0, 8, 8));
+        contentBox.getChildren().add(contentLabel);
+
+        separator3 = new Separator();
+        contentBox.getChildren().add(separator3);
+
+        // **** re and fw
+        refwBox = new HBox();
+        refwBox.setSpacing(8);
+        refwBox.setAlignment(Pos.BOTTOM_RIGHT);
+        reButton = new Button("回复");
+        fwButton  = new Button("转发");
+        refwBox.getChildren().addAll(reButton, fwButton);
+        contentBox.getChildren().add(refwBox);
+        contentBox.setVisible(false);
 
         splitPane.getItems().addAll(userBox, emailBox, contentBox);
         VBox.setVgrow(splitPane, Priority.ALWAYS);
@@ -455,6 +531,7 @@ public class Main extends Application {
                 listData = FXCollections.observableArrayList(emails);
                 listView.setItems(listData);
                 listView.setCellFactory((ListView<Email> l) -> new MyListCell());
+                contentBox.setVisible(false);
             }
         });
 
@@ -473,6 +550,29 @@ public class Main extends Application {
                     }
                 }
             }
+            subjectLabel.setText(email.getSubject());
+            fromText.setText(email.getFrom());
+            String to = "";
+            for (String s : email.getTo_list()) {
+                to += s + ";";
+            }
+            toText.setText(to);
+            String cc = "";
+            for (String s : email.getCc_list()) {
+                cc += s + ";";
+            }
+            ccText.setText(cc);
+            String date = "";
+            SimpleDateFormat df_old = new SimpleDateFormat("EE, dd MMM yyyy kk:mm:ss Z", Locale.US);
+            SimpleDateFormat df_new = new SimpleDateFormat("yyyy年MM月dd日 kk:mm", Locale.US);
+            try {
+                date = df_new.format(df_old.parse(email.getDate()));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            dateText.setText(date);
+            contentLabel.setText(email.getContent());
+            contentBox.setVisible(true);
         });
 
         listView.setOnMouseClicked((MouseEvent me)->{
