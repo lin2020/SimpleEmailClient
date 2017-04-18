@@ -286,29 +286,30 @@ public class PopUtil {
         boolean is_content_text = false;
         boolean is_content_type = false;
         boolean get_content = false;
+        boolean get_head = true;
         for (String line : lines) {
-            if (line.startsWith("Date:")) {
+            if (line.startsWith("Date:") && get_head) {
                 date = line.substring(6);
             }
-            else if (line.startsWith("From:")) {
+            else if (line.startsWith("From:") && get_head) {
                 Pattern p = Pattern.compile(email_regex);
                 Matcher m = p.matcher(line);
                 if (m.find()) {
                     from = m.group();
                 }
-            } else if (line.startsWith("To:")) {
+            } else if (line.startsWith("To:") && get_head) {
                 Pattern p = Pattern.compile(email_regex);
                 Matcher m = p.matcher(line);
                 while (m.find()) {
                     to_list.addElement(m.group());
                 }
-            } else if(line.startsWith("Cc:")){
+            } else if(line.startsWith("Cc:") && get_head){
                 Pattern p = Pattern.compile(email_regex);
                 Matcher m = p.matcher(line);
                 while (m.find()) {
                     cc_list.addElement(m.group());
                 }
-            } else if (line.startsWith("Subject:")) {
+            } else if (line.startsWith("Subject:") && get_head) {
                 Pattern p = Pattern.compile(subject_regex);
                 Matcher m = p.matcher(line);
                 if (m.find()) {
@@ -319,12 +320,14 @@ public class PopUtil {
             } else if (line.startsWith("------")) {
                 is_content_text = false;
                 get_content = false;
+                get_head = false;
             } else if (line.startsWith("Content-Type:")) {
                 if (line.contains("text/plain")) {
                     is_content_type = true;
                 } else {
                     is_content_type = false;
                 }
+                get_head = false;
             } else if (line.endsWith("base64")) {
                 is_content_text = true;
             }

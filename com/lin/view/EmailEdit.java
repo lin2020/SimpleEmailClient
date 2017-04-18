@@ -29,6 +29,7 @@ import javafx.scene.web.HTMLEditor;
 import java.util.Date;
 import java.text.SimpleDateFormat;
 import javafx.concurrent.*;
+import java.io.File;
 
 import com.lin.database.*;
 import com.lin.model.*;
@@ -41,6 +42,9 @@ public class EmailEdit extends Stage {
     private List<Email> emails;
     private EmailClientDB emailClientDB;
     private String uidl;
+    private String kind;
+    private File attachFile;
+    private boolean hasAttach;
 
     // scene
     private Scene scene;
@@ -58,8 +62,11 @@ public class EmailEdit extends Stage {
     private TextField bccText;
     private Label subjectLabel;
     private TextField subjectText;
+    private Button attachButton;
     // html editor
-    private HTMLEditor editor;
+    private HTMLEditor htmlEditor;
+    // txt editor
+    private TextArea txtEditor;
     // hbox pane
     private HBox hbox;
     private Button saveButton;
@@ -68,16 +75,19 @@ public class EmailEdit extends Stage {
     private Label progressLabel;
     private ProgressBar progressBar;
 
-    public EmailEdit(String uidl) {
+    public EmailEdit(String uidl, String kind) {
         // 通过时间来辨别编辑邮件的唯一性
         this.uidl = uidl;
+        // 通过输入的类型来判断要编辑的邮件的类型
+        this.kind = kind;
         initEmailClientDB();
         initComponents();
         initEvents();
     }
 
-    public EmailEdit(String uidl, Email email, String type) {
+    public EmailEdit(String uidl, Email email, String type, String kind) {
         this.uidl = uidl;
+        this.kind = kind;
         initEmailClientDB();
         initComponents();
         initEvents();
@@ -85,7 +95,11 @@ public class EmailEdit extends Stage {
             toText.setText(email.getFrom());
         }
         subjectText.setText(type + email.getSubject());
-        editor.setHtmlText(CoderUtil.getHtml(email));
+        if (kind.equals("txt")) {
+            txtEditor.setText(getOriginalText(email));
+        } else if (kind.equals("html")) {
+            htmlEditor.setHtmlText(getOriginalText(email));
+        }
     }
 
     private void initEmailClientDB() {
@@ -94,6 +108,9 @@ public class EmailEdit extends Stage {
     }
 
     private void initComponents() {
+
+        attachFile = null;
+        hasAttach = false;
 
         // * root pane
         vbox = new VBox();
@@ -160,17 +177,24 @@ public class EmailEdit extends Stage {
         grid.getChildren().add(subjectText);
 
         // ** html editor
-        editor = new HTMLEditor();
+        htmlEditor = new HTMLEditor();
+        // ** txt editor
+        txtEditor = new TextArea();
+        txtEditor.setPrefHeight(400);
+        // txtEditor.setAlignment(Pos.TOP_LEFT);
 
         // ** select button
         hbox = new HBox();
         hbox.setSpacing(5);
-        // *** saveButton
-        saveButton = new Button("保存");
-        hbox.getChildren().add(saveButton);
         // *** sendButton
         sendButton = new Button("发送");
         hbox.getChildren().add(sendButton);
+        // *** saveButton
+        saveButton = new Button("保存");
+        hbox.getChildren().add(saveButton);
+        // *** attachButton
+        attachButton = new Button("附件");
+        hbox.getChildren().add(attachButton);
         // *** progressBar
         phbox = new HBox();
         phbox.setSpacing(8);
@@ -186,7 +210,11 @@ public class EmailEdit extends Stage {
         hbox.getChildren().add(phbox);
 
         vbox.getChildren().add(grid);
-        vbox.getChildren().add(editor);
+        if (kind.equals("txt")) {
+            vbox.getChildren().add(txtEditor);
+        } else if (kind.equals("html")) {
+            vbox.getChildren().add(htmlEditor);
+        }
         vbox.getChildren().add(hbox);
 
         scene = new Scene(vbox, 650, 500);
@@ -198,14 +226,28 @@ public class EmailEdit extends Stage {
 
     private void initEvents() {
 
+        // 添加附件
+        attachButton.setOnAction((ActionEvent ae)->{
+            final FileChooser fileChooser = new FileChooser();
+            attachFile = fileChooser.showOpenDialog(this);
+            if (attachFile != null) {
+                LogUtil.i("attachFile");
+                hasAttach = true;
+            }
+        });
+
         // 保存邮件
         saveButton.setOnAction((ActionEvent ev)->{
+            String content = "";
+            if (kind.equals("txt")) {
+                content = txtEditor.getText();
+            } else if (kind.equals("html")) {
+                content = htmlEditor.getHtmlText();
+            }
+            Email email = new Email(fromCombo.getValue(), toText.getText(), ccText.getText(), bccText.getText(), subjectText.getText(), content);
+            email.setUidl(uidl);
             SimpleDateFormat df = new SimpleDateFormat("E, dd MMM yyyy hh:mm:ss Z", Locale.US);
             String date = df.format(new Date());
-            Email email = new Email(fromCombo.getValue(),
-                                    toText.getText(), ccText.getText(), bccText.getText(),
-                                    subjectText.getText(), editor.getHtmlText());
-            email.setUidl(uidl);
             email.setDate(date);
             for (User u : users) {
                 if (u.getEmail_addr().equals(fromCombo.getValue())) {
@@ -228,13 +270,17 @@ public class EmailEdit extends Stage {
         // 发送邮件
         sendButton.setOnAction((ActionEvent ev)->{
             if (isInputCorrect()) {
+                String content = "";
+                if (kind.equals("txt")) {
+                    content = txtEditor.getText();
+                } else if (kind.equals("html")) {
+                    content = htmlEditor.getHtmlText();
+                }
+                LogUtil.i(subjectText.getText());
+                Email email = new Email(fromCombo.getValue(), toText.getText(), ccText.getText(), bccText.getText(), subjectText.getText(), content);
+                email.setUidl(uidl);
                 SimpleDateFormat df = new SimpleDateFormat("E, dd MMM yyyy hh:mm:ss Z", Locale.US);
                 String date = df.format(new Date());
-                LogUtil.i(date);
-                Email email = new Email(fromCombo.getValue(),
-                                        toText.getText(), ccText.getText(), bccText.getText(),
-                                        subjectText.getText(), CoderUtil.htmltoTxt(editor.getHtmlText()));
-                email.setUidl(uidl);
                 email.setDate(date);
                 for (User u : users) {
                     if (u.getEmail_addr().equals(fromCombo.getValue())) {
@@ -242,7 +288,7 @@ public class EmailEdit extends Stage {
                     }
                 }
                 email.setInbox("发件箱");
-                String html = editor.getHtmlText();
+                String html = content;
 
                 phbox.setVisible(true);
 
@@ -255,7 +301,7 @@ public class EmailEdit extends Stage {
 
                     @Override
                     protected Void call() throws Exception {
-                        SmtpUtil.sendEmail(email, html, new SmtpCallbackListener() {
+                        SmtpUtil.sendEmail(email, kind, hasAttach, attachFile, new SmtpCallbackListener() {
                             // 开始连接
                             public void onConnect() {
                                 LogUtil.i("on connect");
@@ -299,8 +345,6 @@ public class EmailEdit extends Stage {
         String to = toText.getText();
         String cc = ccText.getText();
         String bcc = bccText.getText();
-        String subject = subjectText.getText();
-        String content = editor.getHtmlText();
         if (to.equals("") && cc.equals("") && bcc.equals("")) {
             LogUtil.i("to,cc,bcc empty");
             return false;
@@ -308,4 +352,22 @@ public class EmailEdit extends Stage {
         return true;
     }
 
+    private String getOriginalText(Email email) {
+        String txt = "\n\n\n" + "-- 原始邮件 --" + "\n";
+        txt += "--------------------------------------\n";
+        txt += "From: ";
+        txt += email.getFrom() + "\n";
+        txt += "Date: ";
+        txt += email.getDate() + "\n";
+        txt += "To: ";
+        txt += email.getToString() + "\n";
+        txt += "Cc: ";
+        txt += email.getCcString() + "\n";
+        txt += "Subject: ";
+        txt += email.getSubject() + "\n";
+        txt += "--------------------------------------\n";
+        txt += "\n";
+        txt += email.getContent();
+        return txt;
+    }
 }

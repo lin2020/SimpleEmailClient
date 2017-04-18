@@ -422,6 +422,12 @@ public class Main extends Application {
 
         commonMenuItem.setOnAction((ActionEvent t)->{
             LogUtil.i("commonMenuItem has been click");
+            if(users.isEmpty()) {
+                return ;
+            }
+            SimpleDateFormat df = new SimpleDateFormat("EE, dd MMM yyyy hh:mm:ss Z", Locale.US);//设置日期格式
+            LogUtil.i(df.format(new Date()));// new Date()为获取当前系统时间
+            new EmailEdit(df.format(new Date()).toString(), "txt");
         });
 
         htmlMenuItem.setOnAction((ActionEvent t)->{
@@ -431,7 +437,7 @@ public class Main extends Application {
             }
             SimpleDateFormat df = new SimpleDateFormat("EE, dd MMM yyyy hh:mm:ss Z", Locale.US);//设置日期格式
             LogUtil.i(df.format(new Date()));// new Date()为获取当前系统时间
-            new EmailEdit(df.format(new Date()).toString());
+            new EmailEdit(df.format(new Date()).toString(), "html");
         });
 
         treeView.setOnMouseClicked((MouseEvent me)->{
@@ -630,14 +636,14 @@ public class Main extends Application {
             SimpleDateFormat df = new SimpleDateFormat("EE, dd MMM yyyy hh:mm:ss Z", Locale.US);//设置日期格式
             LogUtil.i(df.format(new Date()));// new Date()为获取当前系统时间
             Email email = listView.getSelectionModel().getSelectedItem();
-            new EmailEdit(df.format(new Date()).toString(), email, "回复: ");
+            new EmailEdit(df.format(new Date()).toString(), email, "回复: ", "txt");
         });
 
         fwButton.setOnAction((ActionEvent ae)->{
             SimpleDateFormat df = new SimpleDateFormat("EE, dd MMM yyyy hh:mm:ss Z", Locale.US);//设置日期格式
             LogUtil.i(df.format(new Date()));// new Date()为获取当前系统时间
             Email email = listView.getSelectionModel().getSelectedItem();
-            new EmailEdit(df.format(new Date()).toString(), email, "转发: ");
+            new EmailEdit(df.format(new Date()).toString(), email, "转发: ", "txt");
         });
 
     }

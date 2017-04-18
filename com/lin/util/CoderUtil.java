@@ -37,24 +37,6 @@ public class CoderUtil {
         return html.trim();
     }
 
-    public static String getHtml(Email email) {
-        String txt = "";
-        txt += "<html dir=\"ltr\"><head></head><body contenteditable=\"true\"><p><br></p><p><font face=\"Segoe UI\">" +
-                "原始邮件</font></p><p><p><hr><font face=\"Segoe UI\">From: ";
-        txt += email.getFrom();
-        txt += "</font></p><p><font face=\"Segoe UI\">To: ";
-        txt += email.getToString();
-        txt += "</font></p><p><font face=\"Segoe UI\">Cc: ";
-        txt += email.getCcString();
-        txt += "</font></p><p><font face=\"Segoe UI\">Date: ";
-        txt += email.getDate();
-        txt += "</font></p><p><font face=\"Segoe UI\">Content: ";
-        txt += "</font></p><p><font face=\"Segoe UI\">";
-        txt += email.getContent();
-        txt += "</font></p></p></body></html>";
-        return txt;
-    }
-
     // encode s using BASE64
     public static String encode(String s) {
         return (new BASE64Encoder()).encode(s.getBytes());

@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.lang.System;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.io.File;
+import java.io.FileReader;
 
 import com.lin.util.*;
 import com.lin.model.*;
@@ -18,7 +20,7 @@ import com.lin.database.*;
 
 public class SmtpUtil {
 
-    public static boolean sendEmail(Email email, String html, SmtpCallbackListener listener) {
+    public static boolean sendEmail(Email email, String kind, boolean hasAttach, File file, SmtpCallbackListener listener) {
         String server = "smtp." + email.getFrom().split("@")[1];
         int port = 25;
         EmailClientDB emailClientDB = EmailClientDB.getInstance();
@@ -155,28 +157,57 @@ public class SmtpUtil {
             }
             lines.addElement("Subject: " + "=?GB2312?B?" + CoderUtil.encode(email.getSubject()) + "?=");
             lines.addElement("X-Priority: 3");
-            lines.addElement("X-Has-Attach: no");
+            if (hasAttach) {
+                lines.addElement("X-Has-Attach: yes");
+            } else {
+                lines.addElement("X-Has-Attach: no");
+            }
             lines.addElement("X-Mailer: SimpleEmailClient 1, 0, 0, 0[cn]");
             lines.addElement("Mime-Version: 1.0");
             lines.addElement("Message-ID: <" + System.currentTimeMillis() + email.getFrom().split("@")[1] + ">");
-            lines.addElement("Content-Type: multipart/alternative;");
+            if (hasAttach) {
+                lines.addElement("Content-Type: multipart/mixed;");
+            } else {
+                lines.addElement("Content-Type: multipart/alternative;");
+            }
             lines.addElement("	boundary=\"----=_001_NextPart464060244226_=----\"");
             lines.addElement("");
             lines.addElement("This is a multi-part message in MIME format.");
             lines.addElement("");
             lines.addElement("------=_001_NextPart464060244226_=----");
-            lines.addElement("Content-Type: text/plain;");
-            lines.addElement("	charset=\"GB2312\"");
-            lines.addElement("Content-Transfer-Encoding: base64");
-            lines.addElement("");
-            lines.addElement(CoderUtil.encode(email.getContent()));
-            lines.addElement("");
-            lines.addElement("------=_001_NextPart464060244226_=------");
-            lines.addElement("Content-Type: text/html;");
-            lines.addElement("  charset=\"GB2312\"");
-            lines.addElement("Content-Transfer-Encoding: quoted-printable");
-            lines.addElement("");
-            lines.addElement(html);
+            if (hasAttach) {
+                lines.addElement("Content-Type: multipart/alternative;");
+                lines.addElement("	boundary=\"----=_002_NextPart517720845026_=----\"");
+                lines.addElement("");
+                lines.addElement("------=_002_NextPart517720845026_=----");
+            }
+            if (kind.equals("txt")) {
+                lines.addElement("Content-Type: text/plain;");
+                lines.addElement("	charset=\"GB2312\"");
+                lines.addElement("Content-Transfer-Encoding: base64");
+                lines.addElement("");
+                lines.addElement(CoderUtil.encode(email.getContent()));
+                lines.addElement("");
+            } else if (kind.equals("html")) {
+                lines.addElement("Content-Type: text/html;");
+                lines.addElement("	charset=\"GB2312\"");
+                lines.addElement("Content-Transfer-Encoding: quoted-printable");
+                lines.addElement("");
+                lines.addElement(email.getContent());
+            }
+            if (hasAttach) {
+                lines.addElement("------=_002_NextPart517720845026_=------");
+                lines.addElement("");
+                lines.addElement("------=_001_NextPart464060244226_=------");
+                lines.addElement("Content-Type: application/octet-stream;");
+                lines.addElement("	name=\"=?GB2312?B?" + CoderUtil.encode(file.getName()) + "?=\"");
+                lines.addElement("Content-Transfer-Encoding: base64");
+                lines.addElement("Content-Disposition: attachment;");
+                lines.addElement("	filename=\"=?GB2312?B?" + CoderUtil.encode(file.getName()) + "?=\"");
+                lines.addElement("");
+                lines.addElement(CoderUtil.encode(readFile(file)));
+                lines.addElement("");
+            }
             lines.addElement("------=_001_NextPart464060244226_=------");
             lines.addElement("");
             lines.addElement(".");
@@ -224,4 +255,21 @@ public class SmtpUtil {
         return true;
     }
 
+    public static String readFile(File file) {
+        String fileContent = "";
+        if (file == null) {
+            return fileContent;
+        }
+        try {
+            BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
+            String line = null;
+            while ((line = bufferedReader.readLine()) != null) {
+                fileContent += line;
+            }
+            bufferedReader.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return fileContent;
+    }
 }
