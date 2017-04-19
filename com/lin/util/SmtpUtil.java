@@ -165,22 +165,12 @@ public class SmtpUtil {
             lines.addElement("X-Mailer: SimpleEmailClient 1, 0, 0, 0[cn]");
             lines.addElement("Mime-Version: 1.0");
             lines.addElement("Message-ID: <" + System.currentTimeMillis() + email.getFrom().split("@")[1] + ">");
-            if (hasAttach) {
-                lines.addElement("Content-Type: multipart/mixed;");
-            } else {
-                lines.addElement("Content-Type: multipart/alternative;");
-            }
+            lines.addElement("Content-Type: multipart/mixed;");
             lines.addElement("	boundary=\"----=_001_NextPart464060244226_=----\"");
             lines.addElement("");
             lines.addElement("This is a multi-part message in MIME format.");
             lines.addElement("");
             lines.addElement("------=_001_NextPart464060244226_=----");
-            if (hasAttach) {
-                lines.addElement("Content-Type: multipart/alternative;");
-                lines.addElement("	boundary=\"----=_002_NextPart517720845026_=----\"");
-                lines.addElement("");
-                lines.addElement("------=_002_NextPart517720845026_=----");
-            }
             if (kind.equals("txt")) {
                 lines.addElement("Content-Type: text/plain;");
                 lines.addElement("	charset=\"GB2312\"");
@@ -196,9 +186,7 @@ public class SmtpUtil {
                 lines.addElement(email.getContent());
             }
             if (hasAttach) {
-                lines.addElement("------=_002_NextPart517720845026_=------");
-                lines.addElement("");
-                lines.addElement("------=_001_NextPart464060244226_=------");
+                lines.addElement("------=_001_NextPart464060244226_=----");
                 lines.addElement("Content-Type: application/octet-stream;");
                 lines.addElement("	name=\"=?GB2312?B?" + CoderUtil.encode(file.getName()) + "?=\"");
                 lines.addElement("Content-Transfer-Encoding: base64");
@@ -206,7 +194,6 @@ public class SmtpUtil {
                 lines.addElement("	filename=\"=?GB2312?B?" + CoderUtil.encode(file.getName()) + "?=\"");
                 lines.addElement("");
                 lines.addElement(CoderUtil.encode(readFile(file)));
-                lines.addElement("");
             }
             lines.addElement("------=_001_NextPart464060244226_=------");
             lines.addElement("");
