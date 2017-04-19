@@ -282,7 +282,7 @@ public class PopUtil {
         String subject = "";
         String content = "";
         String email_regex = "(\\w)+(\\.\\w+)*@(\\w)+((\\.\\w+)+)";
-        String subject_regex = "[B][?].+?[?][=]";
+        String subject_regex = "[B][?].*?[?][=]";
         boolean is_content_text = false;
         boolean is_content_type = false;
         boolean get_content = false;

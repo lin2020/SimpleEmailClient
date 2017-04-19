@@ -43,7 +43,7 @@ public class EmailEdit extends Stage {
     private EmailClientDB emailClientDB;
     private String uidl;
     private String kind;
-    private File attachFile;
+    private List<File> attachFile;
     private boolean hasAttach;
 
     // scene
@@ -62,15 +62,16 @@ public class EmailEdit extends Stage {
     private TextField bccText;
     private Label subjectLabel;
     private TextField subjectText;
-    private Button attachButton;
     // html editor
     private HTMLEditor htmlEditor;
     // txt editor
     private TextArea txtEditor;
     // hbox pane
     private HBox hbox;
-    private Button saveButton;
     private Button sendButton;
+    private Button saveButton;
+    private Button attachButton;
+    private Label attachLabel;
     private HBox phbox;
     private Label progressLabel;
     private ProgressBar progressBar;
@@ -109,7 +110,7 @@ public class EmailEdit extends Stage {
 
     private void initComponents() {
 
-        attachFile = null;
+        attachFile = new ArrayList<>();
         hasAttach = false;
 
         // * root pane
@@ -185,6 +186,7 @@ public class EmailEdit extends Stage {
 
         // ** select button
         hbox = new HBox();
+        hbox.setAlignment(Pos.CENTER);
         hbox.setSpacing(5);
         // *** sendButton
         sendButton = new Button("发送");
@@ -195,6 +197,11 @@ public class EmailEdit extends Stage {
         // *** attachButton
         attachButton = new Button("附件");
         hbox.getChildren().add(attachButton);
+        // *** attachLabel
+        attachLabel = new Label("附件: ");
+        attachLabel.setAlignment(Pos.CENTER);
+        hbox.getChildren().add(attachLabel);
+        attachLabel.setVisible(false);
         // *** progressBar
         phbox = new HBox();
         phbox.setSpacing(8);
@@ -229,11 +236,21 @@ public class EmailEdit extends Stage {
         // 添加附件
         attachButton.setOnAction((ActionEvent ae)->{
             final FileChooser fileChooser = new FileChooser();
-            attachFile = fileChooser.showOpenDialog(this);
-            if (attachFile != null) {
+            final File file = fileChooser.showOpenDialog(this);
+            if (file != null) {
                 LogUtil.i("attachFile");
+                attachFile.add(file);
+                attachLabel.setText(attachLabel.getText() + file.getName() + "; ");
+                attachLabel.setVisible(true);
                 hasAttach = true;
             }
+        });
+
+        attachLabel.setOnMouseClicked((MouseEvent me)->{
+            hasAttach = false;
+            attachFile.clear();
+            attachLabel.setText("附件 ");
+            attachLabel.setVisible(false);
         });
 
         // 保存邮件

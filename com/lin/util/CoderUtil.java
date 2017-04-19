@@ -37,6 +37,11 @@ public class CoderUtil {
         return html.trim();
     }
 
+    // encode b using BASE64
+    public static String encode(byte[] b) {
+        return (new BASE64Encoder()).encode(b);
+    }
+
     // encode s using BASE64
     public static String encode(String s) {
         return (new BASE64Encoder()).encode(s.getBytes());

@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.io.File;
 import java.io.FileReader;
+import java.io.*;
 
 import com.lin.util.*;
 import com.lin.model.*;
@@ -20,7 +21,7 @@ import com.lin.database.*;
 
 public class SmtpUtil {
 
-    public static boolean sendEmail(Email email, String kind, boolean hasAttach, File file, SmtpCallbackListener listener) {
+    public static boolean sendEmail(Email email, String kind, boolean hasAttach, List<File> attachFile, SmtpCallbackListener listener) {
         String server = "smtp." + email.getFrom().split("@")[1];
         int port = 25;
         EmailClientDB emailClientDB = EmailClientDB.getInstance();
@@ -186,14 +187,17 @@ public class SmtpUtil {
                 lines.addElement(email.getContent());
             }
             if (hasAttach) {
-                lines.addElement("------=_001_NextPart464060244226_=----");
-                lines.addElement("Content-Type: application/octet-stream;");
-                lines.addElement("	name=\"=?GB2312?B?" + CoderUtil.encode(file.getName()) + "?=\"");
-                lines.addElement("Content-Transfer-Encoding: base64");
-                lines.addElement("Content-Disposition: attachment;");
-                lines.addElement("	filename=\"=?GB2312?B?" + CoderUtil.encode(file.getName()) + "?=\"");
-                lines.addElement("");
-                lines.addElement(CoderUtil.encode(readFile(file)));
+                for (File file : attachFile) {
+                    lines.addElement("------=_001_NextPart464060244226_=----");
+                    lines.addElement("Content-Type: application/octet-stream;");
+                    lines.addElement("	name=\"=?GB2312?B?" + CoderUtil.encode(file.getName()) + "?=\"");
+                    lines.addElement("Content-Transfer-Encoding: base64");
+                    lines.addElement("Content-Disposition: attachment;");
+                    lines.addElement("	filename=\"=?GB2312?B?" + CoderUtil.encode(file.getName()) + "?=\"");
+                    lines.addElement("");
+                    lines.addElement(CoderUtil.encode(readFile(file)));
+                    lines.addElement("");
+                }
             }
             lines.addElement("------=_001_NextPart464060244226_=------");
             lines.addElement("");
@@ -242,21 +246,24 @@ public class SmtpUtil {
         return true;
     }
 
-    public static String readFile(File file) {
-        String fileContent = "";
+    // 读取文件
+    public static byte[] readFile(File file) {
+        byte[] byteArray = new byte[(int)file.length()];
         if (file == null) {
-            return fileContent;
+            return byteArray;
         }
         try {
-            BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
-            String line = null;
-            while ((line = bufferedReader.readLine()) != null) {
-                fileContent += line;
+            InputStream in = new FileInputStream(file);
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            int b = 0;
+            while ((b = in.read()) != -1) {
+                out.write(b);
             }
-            bufferedReader.close();
+            byteArray = out.toByteArray();
+            in.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return fileContent;
+        return byteArray;
     }
 }
