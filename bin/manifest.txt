@@ -1,1 +1,2 @@
+Class-Path: EmailClientHelper.jar
 Main-Class: com.lin.view.Main
