@@ -1,6 +1,7 @@
 package com.lin.view;
 
 import java.util.*;
+import java.awt.Desktop;;
 import java.text.SimpleDateFormat;
 import java.awt.Rectangle;
 import javax.swing.event.ChangeListener;
@@ -30,6 +31,7 @@ import javafx.concurrent.*;
 import javafx.scene.effect.BoxBlur;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import java.io.*;
 
 import com.lin.database.*;
 import com.lin.model.*;
@@ -681,6 +683,22 @@ public class Main extends Application {
             new EmailEdit(df.format(new Date()).toString(), email, "转发: ", "txt");
         });
 
+        // 查看附件
+        attachmentLabel.setOnMouseClicked((MouseEvent me)->{
+            Desktop desktop = Desktop.getDesktop();
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Open Resource File");
+            String attachments_name = "C:\\SimpleEmailClient\\attachments";
+            fileChooser.setInitialDirectory(new File(attachments_name));
+            File selectedFile = fileChooser.showOpenDialog(primaryStage);
+            if (selectedFile != null) {
+                try {
+                    desktop.open(selectedFile);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     // 定义邮件列表的显示格式
