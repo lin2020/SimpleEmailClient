@@ -45,6 +45,7 @@ public class Main extends Application {
     private List<Email> emails;
     private EmailClientDB emailClientDB;
     private String[] boxName = {"收件箱", "发件箱", "草稿箱", "垃圾箱"};
+    private final Desktop desktop = Desktop.getDesktop();;
 
     private Scene scene;
     // root node
@@ -685,7 +686,6 @@ public class Main extends Application {
 
         // 查看附件
         attachmentLabel.setOnMouseClicked((MouseEvent me)->{
-            Desktop desktop = Desktop.getDesktop();
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Open Resource File");
             String attachments_name = "C:\\SimpleEmailClient\\attachments";
