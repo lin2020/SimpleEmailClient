@@ -63,8 +63,10 @@ public class SmtpUtil {
                 listener.onError();
                 return false;
             }
-            response = in_from_server.readLine();
-            response = in_from_server.readLine();
+            while (!"250 ".equals(response.substring(0, 4))) {
+                response = in_from_server.readLine();
+                LogUtil.i("S: " + response);
+            }
             out_to_server.println("AUTH LOGIN");
             out_to_server.flush();
             response = in_from_server.readLine();

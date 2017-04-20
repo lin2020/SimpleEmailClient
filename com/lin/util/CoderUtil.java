@@ -3,8 +3,6 @@ package com.lin.util;
 import java.lang.String;
 import sun.misc.*;
 
-import com.lin.model.*;
-
 public class CoderUtil {
 
     // change html to txt

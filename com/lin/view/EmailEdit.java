@@ -182,7 +182,6 @@ public class EmailEdit extends Stage {
         // ** txt editor
         txtEditor = new TextArea();
         txtEditor.setPrefHeight(400);
-        // txtEditor.setAlignment(Pos.TOP_LEFT);
 
         // ** select button
         hbox = new HBox();

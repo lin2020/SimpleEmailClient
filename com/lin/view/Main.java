@@ -415,7 +415,7 @@ public class Main extends Application {
                     });
                     contextMenu.getItems().add(item);
                 }
-                contextMenu.show(menuBar, primaryStage.getX() + 70, primaryStage.getY() + 70);
+                contextMenu.show(menuBar, primaryStage.getX() + 60, primaryStage.getY() + menuBar.getScene().getY() + menuBar.localToScene(0, 0).getX() + menuBar.getHeight());
                 contextMenu.setAutoHide(true);
             }
         });
