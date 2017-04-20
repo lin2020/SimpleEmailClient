@@ -245,6 +245,7 @@ public class EmailEdit extends Stage {
             }
         });
 
+        // 删除附件
         attachLabel.setOnMouseClicked((MouseEvent me)->{
             hasAttach = false;
             attachFile.clear();
@@ -271,6 +272,15 @@ public class EmailEdit extends Stage {
                 }
             }
             email.setInbox("草稿箱");
+            Integer attachment_num = 0;
+            Vector<String> attachment_list = new Vector<String>();
+            for (File f : attachFile) {
+                attachment_num++;
+                attachment_list.addElement(f.getName());
+            }
+            email.setAttachment_num(attachment_num);
+            email.setAttachment_list(attachment_list);
+
             emails = emailClientDB.queryEmails(uidl);
             if (emails.isEmpty()) {
                 LogUtil.i("Empty");
@@ -305,6 +315,14 @@ public class EmailEdit extends Stage {
                 }
                 email.setInbox("发件箱");
                 String html = content;
+                Integer attachment_num = 0;
+                Vector<String> attachment_list = new Vector<String>();
+                for (File f : attachFile) {
+                    attachment_num++;
+                    attachment_list.addElement(f.getName());
+                }
+                email.setAttachment_num(attachment_num);
+                email.setAttachment_list(attachment_list);
 
                 phbox.setVisible(true);
 
@@ -381,6 +399,10 @@ public class EmailEdit extends Stage {
         txt += email.getCcString() + "\n";
         txt += "Subject: ";
         txt += email.getSubject() + "\n";
+        if (email.getAttachment_num() != 0) {
+            txt += "Attachment: ";
+            txt += email.getAttachmentString() + "\n";
+        }
         txt += "--------------------------------------\n";
         txt += "\n";
         txt += email.getContent();

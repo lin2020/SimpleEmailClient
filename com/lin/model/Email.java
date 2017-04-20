@@ -2,6 +2,7 @@ package com.lin.model;
 
 import java.util.*;
 import java.util.regex.*;
+import java.io.File;
 
 import com.lin.util.*;
 import com.lin.model.*;
@@ -27,6 +28,10 @@ public class Email {
     private String subject = "";
     // 邮件的内容
     private String content = "";
+    // 邮件的附件数量
+    private Integer attachment_num = 0;
+    // 邮件的附件名称
+    private Vector<String> attachment_list = new Vector<String>();
 
     // 构造函数
 
@@ -205,6 +210,24 @@ public class Email {
         }
     }
 
+    public void setAttachmentByString(String attachment) {
+        attachment_list.clear();
+        String[] list = attachment.split(";");
+        for (String s : list) {
+            if (!s.equals("")) {
+                attachment_list.addElement(s);
+            }
+        }
+    }
+
+    public String getAttachmentString() {
+        String attachment = "";
+        for (String s : attachment_list) {
+            attachment += s + ";";
+        }
+        return attachment;
+    }
+
     // setter 和 getter 方法
 
     public String getUidl() {
@@ -286,6 +309,22 @@ public class Email {
 	public void setContent(String content) {
 		this.content = content;
 	}
+
+    public Integer getAttachment_num() {
+        return attachment_num;
+    }
+
+    public void setAttachment_num(Integer attachment_num) {
+        this.attachment_num = attachment_num;
+    }
+
+    public Vector<String> getAttachment_list() {
+        return attachment_list;
+    }
+
+    public void setAttachment_list(Vector<String> attachment_list) {
+        this.attachment_list = attachment_list;
+    }
 
     @Override
 	public String toString() {

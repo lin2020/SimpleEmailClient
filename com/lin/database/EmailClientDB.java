@@ -12,6 +12,8 @@ public class EmailClientDB {
 	private String dir_name = "C:\\SimpleEmailClient";
 	// database name
 	private String db_name = "jdbc:sqlite:" + dir_name + "\\email_client.db";
+	// attachments path
+	private String attachments_name = "C:\\SimpleEmailClient\\attachments";
 	// user table
 	private static final String CREATE_USER = "create table if not exists user ("
 												+ "id integer primary key autoincrement, "
@@ -29,7 +31,9 @@ public class EmailClientDB {
 												+ "cc_list String, "
 												+ "bcc_list String, "
 												+ "subject String, "
-												+ "content String)";
+												+ "content String, "
+												+ "attachment_num integer, "
+												+ "attachment_list String)";
 
 	// singleton
 	private static EmailClientDB emailClientDB = null;
@@ -61,6 +65,20 @@ public class EmailClientDB {
 				LogUtil.i("Create dir success!");
 			}
 		}
+
+		// create attachments file
+		File attachments = new File(attachments_name);
+		LogUtil.i("Create " + attachments_name);
+		if (attachments.exists()) {
+			LogUtil.i("Attachments exists");
+		} else {
+			if (!attachments.mkdir()) {
+				LogUtil.i("Create attachments failed!");
+			} else {
+				LogUtil.i("Create attachments success!");
+			}
+		}
+
 		// create db
 		Connection connection = null;
 		try {
@@ -210,6 +228,8 @@ public class EmailClientDB {
 				email.setBccByString(rs.getString("bcc_list"));
 				email.setSubject(rs.getString("subject"));
 				email.setContent(rs.getString("content"));
+				email.setAttachment_num(rs.getInt("attachment_num"));
+				email.setAttachmentByString(rs.getString("attachment_list"));
 				list.add(email);
 				LogUtil.i("Load email");
 			}
@@ -249,6 +269,8 @@ public class EmailClientDB {
 				email.setBccByString(rs.getString("bcc_list"));
 				email.setSubject(rs.getString("subject"));
 				email.setContent(rs.getString("content"));
+				email.setAttachment_num(rs.getInt("attachment_num"));
+				email.setAttachmentByString(rs.getString("attachment_list"));
 				list.add(email);
 				LogUtil.i("Load email");
 			}
@@ -271,7 +293,7 @@ public class EmailClientDB {
 		Connection connection = null;
 		try {
 			connection = DriverManager.getConnection(db_name);
-			PreparedStatement pre = connection.prepareStatement("insert into email values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+			PreparedStatement pre = connection.prepareStatement("insert into email values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 			pre.setString(1, email.getUidl());
 			pre.setInt(2, email.getUserid());
 			pre.setString(3, email.getDate());
@@ -282,6 +304,8 @@ public class EmailClientDB {
 			pre.setString(8, email.getBccString());
 			pre.setString(9, email.getSubject());
 			pre.setString(10, email.getContent());
+			pre.setInt(11, email.getAttachment_num());
+			pre.setString(12, email.getAttachmentString());
 			pre.executeUpdate();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -301,7 +325,7 @@ public class EmailClientDB {
 		Connection connection = null;
 		try {
 			connection = DriverManager.getConnection(db_name);
-			PreparedStatement pre = connection.prepareStatement("insert into email values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+			PreparedStatement pre = connection.prepareStatement("insert into email values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 			for (Email email : emails) {
 				pre.setString(1, email.getUidl());
 				pre.setInt(2, email.getUserid());
@@ -313,6 +337,8 @@ public class EmailClientDB {
 				pre.setString(8, email.getBccString());
 				pre.setString(9, email.getSubject());
 				pre.setString(10, email.getContent());
+				pre.setInt(11, email.getAttachment_num());
+				pre.setString(12, email.getAttachmentString());
 				pre.addBatch();
 			}
 			pre.executeBatch();
@@ -372,6 +398,8 @@ public class EmailClientDB {
 				email.setBccByString(rs.getString("bcc_list"));
 				email.setSubject(rs.getString("subject"));
 				email.setContent(rs.getString("content"));
+				email.setAttachment_num(rs.getInt("attachment_num"));
+				email.setAttachmentByString(rs.getString("attachment_list"));
 				list.add(email);
 				LogUtil.i("Load email");
 			}

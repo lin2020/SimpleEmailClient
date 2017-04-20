@@ -22,6 +22,8 @@ import javafx.collections.*;
 import javafx.stage.*;
 import javafx.geometry.*;
 import javafx.scene.input.KeyCode;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 
 import com.lin.view.*;
 import com.lin.util.*;
@@ -64,23 +66,28 @@ public class UserEdit extends Stage {
         grid.setVgap(10);
         grid.setPadding(new Insets(25, 25, 25, 25));
 
-        title = new Text("添加邮箱");
+        title = new Text("登录邮箱");
         title.setFont(Font.font("Tahoma", FontWeight.NORMAL, 24));
         grid.add(title, 0, 0, 2, 1);
 
-        addr = new Label("Address:");
+        Image addrImage = new Image(getClass().getResourceAsStream("账号.png"));
+        addr = new Label("账号:", new ImageView(addrImage));
+        addr.setFont(new Font(18));
         grid.add(addr, 0, 1);
 
         addrField = new TextField();
         grid.add(addrField, 1, 1);
 
-        pswd = new Label("Password:");
+        Image pswdImage = new Image(getClass().getResourceAsStream("密码.png"));
+        pswd = new Label("密码:", new ImageView(pswdImage));
+        pswd.setFont(new Font(18));
         grid.add(pswd, 0, 2);
 
         pswdField = new PasswordField();
         grid.add(pswdField, 1, 2);
 
-        login = new Button("创建");
+        login = new Button("登录");
+        login.setFont(new Font(14));
         hbBtn = new HBox(10);
         hbBtn.setAlignment(Pos.BOTTOM_RIGHT);
         hbBtn.getChildren().add(login);
@@ -131,7 +138,8 @@ public class UserEdit extends Stage {
                     User user = new User(addrField.getText(), pswdField.getText());
                     TreeItem<String> userNode = new TreeItem<> (user.getEmail_addr());
                     for (String s : boxName) {
-                        TreeItem<String> boxleaf = new TreeItem<> (s);
+                        Image image = new Image(getClass().getResourceAsStream(s + ".png"));
+                        TreeItem<String> boxleaf = new TreeItem<> (s, new ImageView(image));
                         userNode.getChildren().add(boxleaf);
                     }
                     rootNode.getChildren().add(userNode);

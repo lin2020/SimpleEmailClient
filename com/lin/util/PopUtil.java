@@ -8,6 +8,8 @@ import java.io.InputStreamReader;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.io.IOException;
+import java.io.File;
+import java.io.*;
 
 import com.lin.util.*;
 import com.lin.model.*;
@@ -281,12 +283,22 @@ public class PopUtil {
         Vector<String> bcc_list = new Vector<String>();
         String subject = "";
         String content = "";
+        int attachment_num = 0;
+        Vector<String> attachment_list = new Vector<String>();
+        String attachments_path = "C:\\SimpleEmailClient\\attachments";
+        File attachments_file = new File(attachments_path);
+        String attachment_name = "";
+        File attachment_file = null;
+        FileOutputStream attachment_out = null;
         String email_regex = "(\\w)+(\\.\\w+)*@(\\w)+((\\.\\w+)+)";
         String subject_regex = "[B][?].*?[?][=]";
+        String filename_regex = "[B][?].*?[?][=]";
+        String content_type = "";
         boolean is_content_text = false;
-        boolean is_content_type = false;
+        boolean is_attachment_text = false;
         boolean get_content = false;
         boolean get_head = true;
+        boolean has_plain_content = false;
         for (String line : lines) {
             if (line.startsWith("Date:") && get_head) {
                 date = line.substring(6);
@@ -319,28 +331,87 @@ public class PopUtil {
                 }
             } else if (line.startsWith("------")) {
                 is_content_text = false;
+                is_attachment_text = false;
                 get_content = false;
                 get_head = false;
             } else if (line.startsWith("Content-Type:")) {
                 if (line.contains("text/plain")) {
-                    is_content_type = true;
+                    content_type = "text/plain";
+                    has_plain_content = true;
+                } else if (line.contains("text/html")) {
+                    content_type = "text/html";
                 } else {
-                    is_content_type = false;
+                    content_type = "attachment";
                 }
                 get_head = false;
             } else if (line.endsWith("base64")) {
                 is_content_text = true;
+            } else if (line.endsWith("quoted-printable")) {
+                is_content_text = true;
+            } else if (line.startsWith("	filename")) {
+                is_attachment_text = true;
+                attachment_num++;
+                Pattern p = Pattern.compile(filename_regex);
+                Matcher m = p.matcher(line);
+                if (m.find()) {
+                    attachment_name = CoderUtil.decode(m.group().substring(2, m.group().length() - 2));
+                } else {
+                    attachment_name = line.substring(10);
+                }
+                attachment_list.addElement(attachment_name);
+                try {
+                    attachment_file = new File(attachments_file, attachment_name);
+                    attachment_file.createNewFile();
+                    attachment_out = new FileOutputStream(attachment_file);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
 
-            if (is_content_text && is_content_type) {
+            // 读取邮件正文，类型为txt
+            if (is_content_text && content_type.equals("text/plain")) {
                 if (!get_content) {
                     get_content = true;
                 } else {
                     content += CoderUtil.decode(line);
                 }
             }
+
+            // 读取邮件正文，类型为html
+            if (is_content_text && content_type.equals("text/html") && !has_plain_content) {
+                if (!get_content) {
+                    get_content = true;
+                } else {
+                    content += line;
+                }
+            }
+
+            // 读取邮件附件
+            if (is_attachment_text && content_type.equals("attachment")) {
+                if (!get_content) {
+                    get_content = true;
+                } else {
+                    try {
+                        attachment_out.write(CoderUtil.decode_byte(line));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        if (!has_plain_content) {
+            content = CoderUtil.htmltoTxt(content);
+        }
+        if (attachment_num != 0) {
+            try {
+                attachment_out.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         Email email = new Email(uidl, userid, date, inbox, from, to_list, cc_list, bcc_list, subject, content);
+        email.setAttachment_num(attachment_num);
+        email.setAttachment_list(attachment_list);
         LogUtil.i(email.toString());
         return email;
     }

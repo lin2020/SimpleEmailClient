@@ -40,6 +40,15 @@ public class CoderUtil {
         return (new BASE64Encoder()).encode(b);
     }
 
+    // decode b using BASE64
+    public static byte[] decode_byte(String s) {
+        try {
+            return (new BASE64Decoder()).decodeBuffer(s);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     // encode s using BASE64
     public static String encode(String s) {
         return (new BASE64Encoder()).encode(s.getBytes());

@@ -28,6 +28,8 @@ import javafx.fxml.*;
 import java.util.regex.*;
 import javafx.concurrent.*;
 import javafx.scene.effect.BoxBlur;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 
 import com.lin.database.*;
 import com.lin.model.*;
@@ -69,7 +71,10 @@ public class Main extends Application {
     private ObservableList<Email> listData;
     // content pane
     private VBox contentBox;
+    private HBox topBox;
     private Label subjectLabel;
+    private HBox attachmentBox;
+    private Label attachmentLabel;
     private Separator separator1;
     private GridPane gridPane;
     private Label fromLabel;
@@ -141,7 +146,8 @@ public class Main extends Application {
         for (User u : users) {
             TreeItem<String> userNode = new TreeItem<> (u.getEmail_addr());
             for(String s : boxName) {
-                TreeItem<String> boxleaf = new TreeItem<> (s);
+                Image image = new Image(getClass().getResourceAsStream(s + ".png"));
+                TreeItem<String> boxleaf = new TreeItem<> (s, new ImageView(image));
                 userNode.getChildren().add(boxleaf);
             }
             rootNode.getChildren().add(userNode);
@@ -165,10 +171,22 @@ public class Main extends Application {
         contentBox.setPadding(new Insets(8, 8, 8, 8));
 
         // **** email subject
+        topBox = new HBox();
         subjectLabel = new Label("主题");
         subjectLabel.setWrapText(true);
         subjectLabel.setFont(new Font("Arial", 24));
-        contentBox.getChildren().add(subjectLabel);
+        topBox.getChildren().add(subjectLabel);
+        attachmentBox = new HBox();
+        attachmentBox.setAlignment(Pos.BOTTOM_RIGHT);
+        Image attachmentImage = new Image(getClass().getResourceAsStream("附件.png"));
+        attachmentLabel = new Label("", new ImageView(attachmentImage));
+        attachmentLabel.setWrapText(true);
+        attachmentLabel.setFont(new Font("Arial", 18));
+        attachmentBox.getChildren().add(attachmentLabel);
+        attachmentBox.setVisible(false);
+        HBox.setHgrow(attachmentBox, Priority.ALWAYS);
+        topBox.getChildren().add(attachmentBox);
+        contentBox.getChildren().add(topBox);
 
         separator1 = new Separator();
         contentBox.getChildren().add(separator1);
@@ -247,6 +265,7 @@ public class Main extends Application {
 
     private void initEvents(Stage primaryStage) {
 
+        // 下载所有邮箱的邮件
         allMailboxs.setOnAction((ActionEvent t)->{
             LogUtil.i("allMailboxs has been click");
 
@@ -331,6 +350,7 @@ public class Main extends Application {
             new Thread(progressTask).start();
         });
 
+        // 下载指定邮箱的邮件
         specificMailbox.setOnAction((ActionEvent t)->{
             LogUtil.i("specificMailbox has been click");
             List<User> users = emailClientDB.loadUsers();
@@ -420,6 +440,7 @@ public class Main extends Application {
             }
         });
 
+        // 编写txt邮件
         commonMenuItem.setOnAction((ActionEvent t)->{
             LogUtil.i("commonMenuItem has been click");
             if(users.isEmpty()) {
@@ -430,6 +451,7 @@ public class Main extends Application {
             new EmailEdit(df.format(new Date()).toString(), "txt");
         });
 
+        // 编写html邮件
         htmlMenuItem.setOnAction((ActionEvent t)->{
             LogUtil.i("htmlMenuItem has been click");
             if(users.isEmpty()) {
@@ -440,6 +462,7 @@ public class Main extends Application {
             new EmailEdit(df.format(new Date()).toString(), "html");
         });
 
+        // 显示邮箱以及配置邮箱
         treeView.setOnMouseClicked((MouseEvent me)->{
             if (me.getButton() == MouseButton.SECONDARY) {
                 LogUtil.i("Mouse Click");
@@ -478,7 +501,8 @@ public class Main extends Application {
                         for (User u : users) {
                             TreeItem<String> userNode = new TreeItem<> (u.getEmail_addr());
                             for(String s : boxName) {
-                                TreeItem<String> boxleaf = new TreeItem<> (s);
+                                Image image = new Image(getClass().getResourceAsStream(s + ".png"));
+                                TreeItem<String> boxleaf = new TreeItem<> (s, new ImageView(image));
                                 userNode.getChildren().add(boxleaf);
                             }
                             rootNode.getChildren().add(userNode);
@@ -545,6 +569,7 @@ public class Main extends Application {
             }
         });
 
+        // 显示邮件
         listView.getSelectionModel().selectedItemProperty().addListener(
         (ObservableValue<? extends Email> ov, Email old_val, Email new_val) -> {
             LogUtil.i("happen");
@@ -562,6 +587,13 @@ public class Main extends Application {
             }
             subjectLabel.setText(email.getSubject());
             fromText.setText(email.getFrom());
+            if (email.getAttachment_num() != 0) {
+                attachmentLabel.setText(email.getAttachmentString());
+                attachmentBox.setVisible(true);
+            } else {
+                attachmentLabel.setText("");
+                attachmentBox.setVisible(false);
+            }
             String to = "";
             for (String s : email.getTo_list()) {
                 to += s + ";";
@@ -585,6 +617,7 @@ public class Main extends Application {
             contentBox.setVisible(true);
         });
 
+        // 配置邮件
         listView.setOnMouseClicked((MouseEvent me)->{
             if (me.getButton() == MouseButton.SECONDARY) {
                 LogUtil.i("Mouse Click");
@@ -632,6 +665,7 @@ public class Main extends Application {
             }
         });
 
+        // 回复邮件
         reButton.setOnAction((ActionEvent ae)->{
             SimpleDateFormat df = new SimpleDateFormat("EE, dd MMM yyyy hh:mm:ss Z", Locale.US);//设置日期格式
             LogUtil.i(df.format(new Date()));// new Date()为获取当前系统时间
@@ -639,6 +673,7 @@ public class Main extends Application {
             new EmailEdit(df.format(new Date()).toString(), email, "回复: ", "txt");
         });
 
+        // 转发邮件
         fwButton.setOnAction((ActionEvent ae)->{
             SimpleDateFormat df = new SimpleDateFormat("EE, dd MMM yyyy hh:mm:ss Z", Locale.US);//设置日期格式
             LogUtil.i(df.format(new Date()));// new Date()为获取当前系统时间
@@ -670,10 +705,16 @@ public class Main extends Application {
                }
 
                VBox root = new VBox();
-               root.setSpacing(8);
+               root.setSpacing(4);
                HBox hbox = new HBox();
                Label fromLabel = new Label(from);
-               fromLabel.setFont(new Font("System Bold", 16));
+               if (item.getAttachment_num() != 0) {
+                   Image image = new Image(getClass().getResourceAsStream("附件_1.png"));
+                   fromLabel.setGraphic(new ImageView(image));
+                   fromLabel.setContentDisplay(ContentDisplay.RIGHT);
+               }
+               // fromLabel.setFont(new Font("System Bold", 16));
+               fromLabel.setFont(new Font("Arial Bold", 16));
                fromLabel.setPrefWidth(140);
                Label dateLabel = new Label(date);
                dateLabel.setFont(new Font(16));
