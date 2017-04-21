@@ -260,7 +260,9 @@ public class SmtpUtil {
             byte[] buffer = new byte[1024];
             int byteRead = 0;
             while ((byteRead = in.read(buffer)) != -1) {
-                lines.addElement(CoderUtil.encode(buffer));
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                out.write(buffer, 0, byteRead);
+                lines.addElement(CoderUtil.encode(out.toByteArray()));
             }
             in.close();
         } catch (Exception e) {
