@@ -30,6 +30,8 @@ import java.util.Date;
 import java.text.SimpleDateFormat;
 import javafx.concurrent.*;
 import java.io.File;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 
 import com.lin.database.*;
 import com.lin.model.*;
@@ -197,7 +199,8 @@ public class EmailEdit extends Stage {
         attachButton = new Button("附件");
         hbox.getChildren().add(attachButton);
         // *** attachLabel
-        attachLabel = new Label("附件: ");
+        Image image = new Image(getClass().getResourceAsStream("附件_1.png"));
+        attachLabel = new Label("", new ImageView(image));
         attachLabel.setAlignment(Pos.CENTER);
         hbox.getChildren().add(attachLabel);
         attachLabel.setVisible(false);
@@ -249,7 +252,7 @@ public class EmailEdit extends Stage {
         attachLabel.setOnMouseClicked((MouseEvent me)->{
             hasAttach = false;
             attachFile.clear();
-            attachLabel.setText("附件 ");
+            attachLabel.setText("");
             attachLabel.setVisible(false);
         });
 

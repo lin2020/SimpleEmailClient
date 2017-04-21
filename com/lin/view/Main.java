@@ -45,7 +45,7 @@ public class Main extends Application {
     private List<Email> emails;
     private EmailClientDB emailClientDB;
     private String[] boxName = {"收件箱", "发件箱", "草稿箱", "垃圾箱"};
-    private final Desktop desktop = Desktop.getDesktop();;
+    private final Desktop desktop = Desktop.getDesktop();
 
     private Scene scene;
     // root node
@@ -94,6 +94,7 @@ public class Main extends Application {
     private HBox refwBox;
     private Button reButton;
     private Button fwButton;
+    private HBox attachmentsBox;
 
     @Override
     public void start(Stage primaryStage) {
@@ -245,6 +246,15 @@ public class Main extends Application {
         fwButton  = new Button("转发");
         refwBox.getChildren().addAll(reButton, fwButton);
         contentBox.getChildren().add(refwBox);
+
+        // attachments box
+        attachmentsBox = new HBox();
+        attachmentsBox.setPadding(new Insets(8, 8, 8, 8));
+        attachmentsBox.setSpacing(12);
+        attachmentsBox.setAlignment(Pos.BOTTOM_LEFT);
+        attachmentsBox.setVisible(false);
+        VBox.setVgrow(attachmentsBox, Priority.ALWAYS);
+        contentBox.getChildren().add(attachmentsBox);
         contentBox.setVisible(false);
 
         splitPane.getItems().addAll(userBox, emailBox, contentBox);
@@ -593,9 +603,36 @@ public class Main extends Application {
             if (email.getAttachment_num() != 0) {
                 attachmentLabel.setText(email.getAttachmentString());
                 attachmentBox.setVisible(true);
+                contentBox.getChildren().remove(attachmentsBox);
+                attachmentsBox = new HBox();
+                attachmentsBox.setPadding(new Insets(8, 8, 8, 8));
+                attachmentsBox.setSpacing(12);
+                attachmentsBox.setAlignment(Pos.BOTTOM_LEFT);
+                attachmentsBox.setVisible(false);
+                VBox.setVgrow(attachmentsBox, Priority.ALWAYS);
+                contentBox.getChildren().add(attachmentsBox);
+                attachmentsBox.setVisible(true);
+                String attachments_path = "C:\\SimpleEmailClient\\attachments\\";
+                for (String s : email.getAttachment_list()) {
+                    Image image = new Image(getClass().getResourceAsStream("附件_2.png"));
+                    Label label = new Label(s, new ImageView(image));
+                    label.setFont(new Font("Arial", 14));
+                    label.setOnMouseClicked((MouseEvent me)->{
+                        File file = new File(attachments_path + s);
+                        if (file != null) {
+                            try {
+                                desktop.open(file);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                    attachmentsBox.getChildren().add(label);
+                }
             } else {
                 attachmentLabel.setText("");
                 attachmentBox.setVisible(false);
+                attachmentsBox.setVisible(false);
             }
             String to = "";
             for (String s : email.getTo_list()) {
