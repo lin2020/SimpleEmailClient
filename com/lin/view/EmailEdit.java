@@ -30,6 +30,7 @@ import java.util.Date;
 import java.text.SimpleDateFormat;
 import javafx.concurrent.*;
 import java.io.File;
+import java.io.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
@@ -245,6 +246,21 @@ public class EmailEdit extends Stage {
                 attachLabel.setText(attachLabel.getText() + file.getName() + "; ");
                 attachLabel.setVisible(true);
                 hasAttach = true;
+                String attachment_path = "C://SimpleEmailClient//attachments//";
+                File file2 = new File(attachment_path + file.getName());
+                try {
+                    FileInputStream in = new FileInputStream(file);
+                    FileOutputStream out = new FileOutputStream(file2);
+                    byte[] buffer = new byte[1024];
+                    int byteRead = 0;
+                    while ((byteRead = in.read(buffer)) != -1) {
+                        out.write(buffer, 0, byteRead);
+                    }
+                    in.close();
+                    out.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -294,6 +310,7 @@ public class EmailEdit extends Stage {
                 }
             }
             emailClientDB.insertEmail(email);
+            new CommonDialog("提示", "保存成功");
         });
 
         // 发送邮件

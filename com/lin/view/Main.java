@@ -623,8 +623,11 @@ public class Main extends Application {
                             try {
                                 desktop.open(file);
                             } catch (Exception e) {
+                                new CommonDialog("提示", "文件已被删除");
                                 e.printStackTrace();
                             }
+                        } else {
+                            new CommonDialog("提示", "文件已被删除");
                         }
                     });
                     attachmentsBox.getChildren().add(label);
