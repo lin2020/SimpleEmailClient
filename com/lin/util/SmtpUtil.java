@@ -42,6 +42,7 @@ public class SmtpUtil {
 
             // 建立连接
             Socket sock = new Socket(server, port);
+            sock.setSoTimeout(10 * 1000);
             BufferedReader in_from_server = new BufferedReader(new InputStreamReader(sock.getInputStream()));
             PrintWriter out_to_server = new PrintWriter(sock.getOutputStream());
             String response = in_from_server.readLine();
@@ -197,7 +198,8 @@ public class SmtpUtil {
                     lines.addElement("Content-Disposition: attachment;");
                     lines.addElement("	filename=\"=?GB2312?B?" + CoderUtil.encode(file.getName()) + "?=\"");
                     lines.addElement("");
-                    lines.addElement(CoderUtil.encode(readFile(file)));
+                    sendFile(file, lines);
+                    // lines.addElement(CoderUtil.encode(readFile(file)));
                     lines.addElement("");
                 }
             }
@@ -246,6 +248,24 @@ public class SmtpUtil {
         }
         listener.onFinish();
         return true;
+    }
+
+    // 发送文件
+    private static void sendFile(File file, Vector<String> lines) {
+        if (file == null) {
+            return;
+        }
+        try {
+            InputStream in = new FileInputStream(file);
+            byte[] buffer = new byte[1024];
+            int byteRead = 0;
+            while ((byteRead = in.read(buffer)) != -1) {
+                lines.addElement(CoderUtil.encode(buffer));
+            }
+            in.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     // 读取文件
