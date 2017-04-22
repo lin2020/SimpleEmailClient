@@ -601,7 +601,7 @@ public class Main extends Application {
             subjectLabel.setText(email.getSubject());
             fromText.setText(email.getFrom());
             if (email.getAttachment_num() != 0) {
-                attachmentLabel.setText(email.getAttachmentString());
+                attachmentLabel.setText("" + email.getAttachment_num());
                 attachmentBox.setVisible(true);
                 contentBox.getChildren().remove(attachmentsBox);
                 attachmentsBox = new HBox();
@@ -772,7 +772,7 @@ public class Main extends Application {
                    fromLabel.setContentDisplay(ContentDisplay.RIGHT);
                }
                // fromLabel.setFont(new Font("System Bold", 16));
-               fromLabel.setFont(new Font("Arial Bold", 16));
+               fromLabel.setFont(new Font("Lucida Bright Demibold Italic", 16));
                fromLabel.setPrefWidth(140);
                Label dateLabel = new Label(date);
                dateLabel.setFont(new Font(16));
