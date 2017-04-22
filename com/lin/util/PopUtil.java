@@ -600,6 +600,8 @@ public class PopUtil {
                     emailClientDB.deleteEmail(email);
                     emailClientDB.insertEmail(email_new);
                     email.setContent(email_new.getContent());
+                    email.setAttachment_num(email_new.getAttachment_num());
+                    email.setAttachment_list(email_new.getAttachment_list());
                     break;
                 }
             }
