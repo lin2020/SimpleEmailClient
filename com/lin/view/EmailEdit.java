@@ -191,13 +191,16 @@ public class EmailEdit extends Stage {
         hbox.setAlignment(Pos.CENTER);
         hbox.setSpacing(5);
         // *** sendButton
-        sendButton = new Button("发送");
+        Image sendImage = new Image(getClass().getResourceAsStream("发送.png"));
+        sendButton = new Button("发送", new ImageView(sendImage));
         hbox.getChildren().add(sendButton);
         // *** saveButton
-        saveButton = new Button("保存");
+        Image saveImage = new Image(getClass().getResourceAsStream("保存.png"));
+        saveButton = new Button("保存", new ImageView(saveImage));
         hbox.getChildren().add(saveButton);
         // *** attachButton
-        attachButton = new Button("附件");
+        Image attachImage = new Image(getClass().getResourceAsStream("附件_3.png"));
+        attachButton = new Button("附件", new ImageView(attachImage));
         hbox.getChildren().add(attachButton);
         // *** attachLabel
         Image image = new Image(getClass().getResourceAsStream("附件_1.png"));

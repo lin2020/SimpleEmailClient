@@ -242,8 +242,10 @@ public class Main extends Application {
         refwBox = new HBox();
         refwBox.setSpacing(8);
         refwBox.setAlignment(Pos.BOTTOM_RIGHT);
-        reButton = new Button("回复");
-        fwButton  = new Button("转发");
+        Image reImage = new Image(getClass().getResourceAsStream("回复.png"));
+        Image fwImage = new Image(getClass().getResourceAsStream("转发.png"));
+        reButton = new Button("回复", new ImageView(reImage));
+        fwButton  = new Button("转发", new ImageView(fwImage));
         refwBox.getChildren().addAll(reButton, fwButton);
         contentBox.getChildren().add(refwBox);
 
