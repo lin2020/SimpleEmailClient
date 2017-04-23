@@ -329,6 +329,8 @@ public class PopUtil {
                 } else {
                     subject = line.substring(9);
                 }
+            } else if (line.equals("X-Has-Attach: yes") && get_head) {
+                attachment_num = -1;
             } else if (line.startsWith("------")) {
                 is_content_text = false;
                 is_attachment_text = false;
@@ -349,6 +351,9 @@ public class PopUtil {
             } else if (line.endsWith("quoted-printable")) {
                 is_content_text = true;
             } else if (line.startsWith("	filename")) {
+                if (attachment_num == -1) {
+                    attachment_num = 0;
+                }
                 is_attachment_text = true;
                 attachment_num++;
                 Pattern p = Pattern.compile(filename_regex);
@@ -510,13 +515,16 @@ public class PopUtil {
     }
 
     // 向服务器发送下载邮件请求
-    public static boolean sendRetrRequest(User user, Email email) {
+    public static boolean sendRetrRequest(User user, Email email, PopCallbackListener listener) {
         EmailClientDB emailClientDB = EmailClientDB.getInstance();
         String[] addr_str = user.getEmail_addr().split("@");
         String server = "pop." + addr_str[1];
         int port = 110;
         String uidl = email.getUidl();
         try {
+
+            listener.onConnect();
+
             // 建立连接
             Socket socket = new Socket(server, port);
             BufferedReader in_from_server = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -524,8 +532,12 @@ public class PopUtil {
             String response = in_from_server.readLine();
             LogUtil.i("S: " + response);
             if (!"+OK".equals(response.substring(0, 3))) {
+                listener.onError();
                 return false;
             }
+
+            listener.onCheck();
+
             // 认证登陆
             out_to_server.println("USER " + user.getEmail_addr());
             out_to_server.flush();
@@ -533,6 +545,7 @@ public class PopUtil {
             LogUtil.i("C: " + "USER " + user.getEmail_addr());
             LogUtil.i("S: " + response);
             if (!"+OK".equals(response.substring(0, 3))) {
+                listener.onError();
                 return false;
             }
             out_to_server.println("PASS " + user.getEmail_pass());
@@ -541,6 +554,7 @@ public class PopUtil {
             LogUtil.i("C: " + "PASS " + user.getEmail_pass());
             LogUtil.i("S: " + response);
             if (!"+OK".equals(response.substring(0, 3))) {
+                listener.onError();
                 return false;
             }
             // 获取状态
@@ -550,6 +564,7 @@ public class PopUtil {
             LogUtil.i("C: " + "STAT");
             LogUtil.i("S: " + response);
             if (!"+OK".equals(response.substring(0,3))) {
+                listener.onError();
                 return false;
             }
             // 获取uidl列表
@@ -559,6 +574,7 @@ public class PopUtil {
             LogUtil.i("C: " + "UIDL");
             LogUtil.i("S: " + response);
             if (!"+OK".equals(response.substring(0,3))) {
+                listener.onError();
                 return false;
             }
             // 从服务器返回的信息中读出邮件列表的uidl
@@ -577,12 +593,31 @@ public class PopUtil {
             for(Integer key : uidl_map.keySet()) {
                 if (uidl.equals(uidl_map.get(key))) {
                     // 下载对应的邮件
+
+                    // 获取邮件大小
+                    out_to_server.println("LIST " + key);
+                    out_to_server.flush();
+                    response = in_from_server.readLine();
+                    LogUtil.i("C: LIST " + key);
+                    LogUtil.i("S: " + response);
+                    if (!"+OK".equals(response.substring(0, 3))) {
+                        listener.onError();
+                        return false;
+                    }
+                    String[] data_num = response.split("\\s+");
+                    long email_size = Long.parseLong(data_num[2]);
+                    long download_size = 0;
+
+                    listener.onDownLoad(0, 0, 0, 0, email_size, download_size);
+
+                    // 正式下载邮件
                     out_to_server.println("RETR " + key);
                     out_to_server.flush();
                     response = in_from_server.readLine();
                     LogUtil.i("C: RETR " + key);
                     LogUtil.i("S: " + response);
-                    if (!"+OK".equals(response.substring(0,3))) {
+                    if (!"+OK".equals(response.substring(0, 3))) {
+                        listener.onError();
                         return false;
                     }
                     Vector<String> lines = new Vector<String>();
@@ -594,6 +629,8 @@ public class PopUtil {
                             flag = false;
                         } else {
                             lines.addElement(response);
+                            download_size += response.length() + 1;
+                            listener.onDownLoad(0, 0, 0, 0, email_size, download_size - 1);
                         }
                     }
                     Email email_new = constructEmail(uidl, user.getId(), "收件箱", lines);
@@ -612,11 +649,14 @@ public class PopUtil {
             LogUtil.i("C: " + "QUIT");
             LogUtil.i("S: " + response);
             if (!"+OK".equals(response.substring(0,3))) {
+                listener.onError();
                 return false;
             }
         } catch (Exception e) {
+            listener.onError();
             e.printStackTrace();
         }
+        listener.onFinish();
         return true;
     }
 }

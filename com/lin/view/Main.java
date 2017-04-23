@@ -594,14 +594,105 @@ public class Main extends Application {
                 for (User user : users) {
                     if (user.getId() == email.getUserid()) {
                         LogUtil.i("download email detail");
-                        PopUtil.sendRetrRequest(user, email);
+                        ProgressDialog progressDialog = new ProgressDialog(email.getSubject());
+                        Task<Void> progressTask = new Task<Void>(){
+
+                            @Override
+                            protected void succeeded() {
+                                super.succeeded();
+                                progressDialog.getCancelButton().setText("结束");
+                                if (email.getAttachment_num() != 0) {
+                                    attachmentLabel.setText("" + email.getAttachment_num());
+                                    String attachments_path = "C:\\SimpleEmailClient\\attachments\\";
+                                    for (String s : email.getAttachment_list()) {
+                                        Image image = new Image(getClass().getResourceAsStream("附件_2.png"));
+                                        Label label = new Label(s, new ImageView(image));
+                                        label.setFont(new Font("Arial", 14));
+                                        label.setOnMouseClicked((MouseEvent me)->{
+                                            File file = new File(attachments_path + s);
+                                            if (file != null) {
+                                                try {
+                                                    desktop.open(file);
+                                                } catch (Exception e) {
+                                                    new CommonDialog("提示", "文件已被删除");
+                                                    e.printStackTrace();
+                                                }
+                                            } else {
+                                                new CommonDialog("提示", "文件已被删除");
+                                            }
+                                        });
+                                        attachmentsBox.getChildren().add(label);
+                                    }
+                                }
+                                contentLabel.setText(email.getContent());
+                            }
+
+                            @Override
+                            protected Void call() throws Exception {
+                                PopUtil.sendRetrRequest(user, email, new PopCallbackListener() {
+                                    @Override
+                                    public void onConnect() {
+                                        LogUtil.i("on connect");
+                                        updateTitle("正在连接");
+                                        updateMessage("");
+                                    }
+
+                                    @Override
+                                    public void onCheck() {
+                                        LogUtil.i("on check");
+                                        updateTitle("正在检查");
+                                        updateMessage("");
+                                    }
+
+                                    // 下载邮件
+                                    @Override
+                                    public void onDownLoad(long total_email_size, long download_email_size,
+                                                           int total_email_count, int download_email_count,
+                                                           long current_email_size, long current_download_size) {
+                                        LogUtil.i("on download");
+                                        updateProgress(current_download_size, current_email_size);
+                                        updateTitle("正在下载");
+                                        updateMessage("待下载: " + current_email_size + "  已下载: " + current_download_size);
+                                    }
+
+                                    @Override
+                                    public void onFinish() {
+                                        LogUtil.i("on finish");
+                                        updateProgress(100, 100);
+                                        updateTitle("下载完成");
+                                    }
+
+                                    @Override
+                                    public void onError() {
+                                        LogUtil.i("on error");
+                                        updateTitle("下载失败");
+                                    }
+
+                                    @Override
+                                    public boolean onCancel() {
+                                        LogUtil.i("on cancel");
+                                        updateTitle("下载取消");
+                                        return progressDialog.getCancel();
+                                    }
+                                });
+                                return null;
+                            }
+                        };
+                        progressDialog.getProgress().progressProperty().bind(progressTask.progressProperty());
+                        progressDialog.getMessageLabel().textProperty().bind(progressTask.messageProperty());
+                        progressDialog.getTitleLabel().textProperty().bind(progressTask.titleProperty());
+                        new Thread(progressTask).start();
                     }
                 }
             }
             subjectLabel.setText(email.getSubject());
             fromText.setText(email.getFrom());
             if (email.getAttachment_num() != 0) {
-                attachmentLabel.setText("" + email.getAttachment_num());
+                if (email.getAttachment_num() == -1) {
+                    attachmentLabel.setText("");
+                } else {
+                    attachmentLabel.setText("" + email.getAttachment_num());
+                }
                 attachmentBox.setVisible(true);
                 contentBox.getChildren().remove(attachmentsBox);
                 attachmentsBox = new HBox();
