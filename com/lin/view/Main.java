@@ -652,7 +652,11 @@ public class Main extends Application {
                                         LogUtil.i("on download");
                                         updateProgress(current_download_size, current_email_size);
                                         updateTitle("正在下载");
-                                        updateMessage("待下载: " + current_email_size + "  已下载: " + current_download_size);
+                                        if (current_email_size > 1024) {
+                                            updateMessage("待下载: " + current_email_size / (1024) + "KB  已下载: " + current_download_size / (1024) + "KB");
+                                        } else {
+                                            updateMessage("待下载: " + current_email_size + "B  已下载: " + current_download_size + "B");
+                                        }
                                     }
 
                                     @Override
