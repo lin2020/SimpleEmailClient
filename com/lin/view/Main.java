@@ -94,7 +94,7 @@ public class Main extends Application {
     private HBox refwBox;
     private Button reButton;
     private Button fwButton;
-    private HBox attachmentsBox;
+    private FlowPane attachmentsBox;
 
     @Override
     public void start(Stage primaryStage) {
@@ -248,11 +248,17 @@ public class Main extends Application {
         contentBox.getChildren().add(refwBox);
 
         // attachments box
-        attachmentsBox = new HBox();
+        attachmentsBox = new FlowPane();
         attachmentsBox.setPadding(new Insets(8, 8, 8, 8));
-        attachmentsBox.setSpacing(12);
+        attachmentsBox.setVgap(8);
+        attachmentsBox.setHgap(16);
         attachmentsBox.setAlignment(Pos.BOTTOM_LEFT);
         attachmentsBox.setVisible(false);
+        // attachmentsBox = new FlowPane();
+        // attachmentsBox.setVgap(8);
+        // attachmentsBox.setHgap(4);
+        // attachmentsBox.setPrefWrapLength(300); // preferred width = 300
+
         VBox.setVgrow(attachmentsBox, Priority.ALWAYS);
         contentBox.getChildren().add(attachmentsBox);
         contentBox.setVisible(false);
@@ -699,9 +705,11 @@ public class Main extends Application {
                 }
                 attachmentBox.setVisible(true);
                 contentBox.getChildren().remove(attachmentsBox);
-                attachmentsBox = new HBox();
+                attachmentsBox = new FlowPane();
                 attachmentsBox.setPadding(new Insets(8, 8, 8, 8));
-                attachmentsBox.setSpacing(12);
+                // attachmentsBox.setSpacing(12);
+                attachmentsBox.setVgap(8);
+                attachmentsBox.setHgap(16);
                 attachmentsBox.setAlignment(Pos.BOTTOM_LEFT);
                 attachmentsBox.setVisible(false);
                 VBox.setVgrow(attachmentsBox, Priority.ALWAYS);
