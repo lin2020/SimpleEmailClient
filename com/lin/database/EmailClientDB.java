@@ -377,6 +377,27 @@ public class EmailClientDB {
 		}
 	}
 
+	//delete emails
+	public void deleteEmails(Integer userid) {
+		Connection connection = null;
+		try {
+			connection = DriverManager.getConnection(db_name);
+			PreparedStatement pre = connection.prepareStatement("delete from email where userid = ?");
+			pre.setInt(1, userid);
+			pre.executeUpdate();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (connection != null) {
+					connection.close();
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 	// query an email
 	public List<Email> queryEmails(String uidl) {
 		List<Email> list = new ArrayList<Email>();

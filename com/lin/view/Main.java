@@ -176,7 +176,8 @@ public class Main extends Application {
 
         // **** email subject
         topBox = new HBox();
-        subjectLabel = new Label("主题");
+        Image subjectImage = new Image(getClass().getResourceAsStream("主题.png"));
+        subjectLabel = new Label("主题", new ImageView(subjectImage));
         subjectLabel.setWrapText(true);
         subjectLabel.setFont(new Font("Arial", 24));
         topBox.getChildren().add(subjectLabel);
@@ -331,7 +332,7 @@ public class Main extends Application {
                                                    long current_email_size, long current_download_size) {
                                 LogUtil.i("on download");
                                 if (onlyDownloadTop.isSelected()) {
-                                    updateProgress(download_email_size, total_email_size);
+                                    updateProgress(download_email_count, total_email_count);
                                     updateTitle("正在下载");
                                     updateMessage(u.getEmail_addr() + " 待下载: " + total_email_count + "  已下载: " + download_email_count);
                                 } else {
@@ -516,6 +517,7 @@ public class Main extends Application {
                         LogUtil.i("can't find user");
                     } else {
                         emailClientDB.deleteUser(user);
+                        emailClientDB.deleteEmails(user.getId());
                         users = emailClientDB.loadUsers();
                         rootNode = new TreeItem<> ("user@example.com");
                         rootNode.setExpanded(true);
@@ -572,8 +574,8 @@ public class Main extends Application {
                     public int compare(Email email0, Email email1) {
                         SimpleDateFormat df_old = new SimpleDateFormat("EE, dd MMM yyyy hh:mm:ss Z", Locale.US);  //原来日期格式
                         SimpleDateFormat df_new = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.US);  //新的日期格式
-                        String d0 = null;
-                        String d1 = null;
+                        String d0 = "";
+                        String d1 = "";
                         try {
                             d0 = df_new.format(df_old.parse(email0.getDate()));
                             d1 = df_new.format(df_old.parse(email1.getDate()));
