@@ -300,28 +300,28 @@ public class PopUtil {
         boolean get_head = true;
         boolean has_plain_content = false;
         for (String line : lines) {
-            if (line.startsWith("Date:") && get_head) {
+            if (line.startsWith("Date:")) {
                 date = line.substring(6);
             }
-            else if (line.startsWith("From:") && get_head) {
+            else if (line.startsWith("From:")) {
                 Pattern p = Pattern.compile(email_regex);
                 Matcher m = p.matcher(line);
                 if (m.find()) {
                     from = m.group();
                 }
-            } else if (line.startsWith("To:") && get_head) {
+            } else if (line.startsWith("To:")) {
                 Pattern p = Pattern.compile(email_regex);
                 Matcher m = p.matcher(line);
                 while (m.find()) {
                     to_list.addElement(m.group());
                 }
-            } else if(line.startsWith("Cc:") && get_head){
+            } else if(line.startsWith("Cc:")){
                 Pattern p = Pattern.compile(email_regex);
                 Matcher m = p.matcher(line);
                 while (m.find()) {
                     cc_list.addElement(m.group());
                 }
-            } else if (line.startsWith("Subject:") && get_head) {
+            } else if (line.startsWith("Subject:")) {
                 Pattern p = Pattern.compile(subject_regex);
                 Matcher m = p.matcher(line);
                 if (m.find()) {
@@ -329,7 +329,7 @@ public class PopUtil {
                 } else {
                     subject = line.substring(9);
                 }
-            } else if (line.equals("X-Has-Attach: yes") && get_head) {
+            } else if (line.equals("X-Has-Attach: yes")) {
                 attachment_num = -1;
             } else if (line.startsWith("------")) {
                 is_content_text = false;
