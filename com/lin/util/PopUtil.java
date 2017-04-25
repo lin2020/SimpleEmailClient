@@ -204,6 +204,9 @@ public class PopUtil {
 
             // 从服务器下载本地没有的邮件
             for (Integer key : data_map.keySet()) {
+                if (listener.onCancel() == true) {
+                    return false;
+                }
                 String uidl = uidl_map.get(key);
                 if (onlyDownloadTop) {
                     out_to_server.println("TOP " + key + " 1");
@@ -233,6 +236,9 @@ public class PopUtil {
                 Vector<String> lines = new Vector<String>();
                 flag = true;
                 while (flag) {
+                    if (listener.onCancel() == true) {
+                        return false;
+                    }
                     response = in_from_server.readLine();
                     LogUtil.i("S: " + response);
                     if (".".equals(response)) {
@@ -514,7 +520,9 @@ public class PopUtil {
         return true;
     }
 
-    // 向服务器发送下载邮件请求
+    // 向服务器发起获取整个邮件的请求
+    // user 下载的用户邮箱，email 要下载的邮件
+    // listener 下载状态监听接口
     public static boolean sendRetrRequest(User user, Email email, PopCallbackListener listener) {
         EmailClientDB emailClientDB = EmailClientDB.getInstance();
         String[] addr_str = user.getEmail_addr().split("@");
@@ -581,6 +589,9 @@ public class PopUtil {
             HashMap<Integer, String> uidl_map = new HashMap<Integer, String>();
             boolean flag = true;
             while (flag) {
+                if (listener.onCancel() == true) {
+                    return false;
+                }
                 response = in_from_server.readLine();
                 LogUtil.i("S: " + response);
                 if (".".equals(response)) {

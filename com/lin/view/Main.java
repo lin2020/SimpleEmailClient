@@ -358,7 +358,9 @@ public class Main extends Application {
                             @Override
                             public boolean onCancel() {
                                 LogUtil.i("on cancel");
-                                updateTitle("下载取消");
+                                if (progressDialog.getCancel() == true) {
+                                    updateTitle("下载取消");
+                                }
                                 return progressDialog.getCancel();
                             }
                         });
@@ -442,7 +444,9 @@ public class Main extends Application {
                                         @Override
                                         public boolean onCancel() {
                                             LogUtil.i("on cancel");
-                                            updateTitle("下载取消");
+                                            if (progressDialog.getCancel() == true) {
+                                                updateTitle("下载取消");
+                                            }
                                             return progressDialog.getCancel();
                                         }
                                     });
@@ -685,7 +689,9 @@ public class Main extends Application {
                                     @Override
                                     public boolean onCancel() {
                                         LogUtil.i("on cancel");
-                                        updateTitle("下载取消");
+                                        if (progressDialog.getCancel() == true) {
+                                            updateTitle("下载取消");
+                                        }
                                         return progressDialog.getCancel();
                                     }
                                 });
