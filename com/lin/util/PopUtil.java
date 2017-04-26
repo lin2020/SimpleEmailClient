@@ -306,6 +306,8 @@ public class PopUtil {
         boolean get_head = true;
         boolean has_plain_content = false;
         for (String line : lines) {
+
+            // 读取头部信息
             if (line.startsWith("Date:")) {
                 date = line.substring(6);
             }
@@ -337,12 +339,16 @@ public class PopUtil {
                 }
             } else if (line.equals("X-Has-Attach: yes")) {
                 attachment_num = -1;
-            } else if (line.startsWith("------")) {
+            }
+
+            // 读取每一部分的信息
+            if (line.startsWith("------")) {
                 is_content_text = false;
                 is_attachment_text = false;
                 get_content = false;
                 get_head = false;
-            } else if (line.startsWith("Content-Type:")) {
+            }
+            if (line.contains("Content-Type:")) {
                 if (line.contains("text/plain")) {
                     content_type = "text/plain";
                     has_plain_content = true;
@@ -352,11 +358,11 @@ public class PopUtil {
                     content_type = "attachment";
                 }
                 get_head = false;
-            } else if (line.endsWith("base64")) {
+            }
+            if (line.endsWith("base64") || line.endsWith("quoted-printable")) {
                 is_content_text = true;
-            } else if (line.endsWith("quoted-printable")) {
-                is_content_text = true;
-            } else if (line.startsWith("	filename")) {
+            }
+            if (line.contains("filename")) {
                 if (attachment_num == -1) {
                     attachment_num = 0;
                 }
@@ -367,7 +373,13 @@ public class PopUtil {
                 if (m.find()) {
                     attachment_name = CoderUtil.decode(m.group().substring(2, m.group().length() - 2));
                 } else {
-                    attachment_name = line.substring(10);
+                    Pattern pp = Pattern.compile("filename=\".+\"");
+                    Matcher mm = pp.matcher(line);
+                    if (mm.find()) {
+                        attachment_name = mm.group().substring(10, mm.group().length() - 1);
+                    } else {
+                        attachment_name = line.substring(10);
+                    }
                 }
                 attachment_list.addElement(attachment_name);
                 try {
@@ -380,34 +392,27 @@ public class PopUtil {
             }
 
             // 读取邮件正文，类型为txt
-            if (is_content_text && content_type.equals("text/plain")) {
-                if (!get_content) {
-                    get_content = true;
-                } else {
-                    content += CoderUtil.decode(line);
-                }
+            if (is_content_text &&  get_content && content_type.equals("text/plain")) {
+                content += CoderUtil.decode(line);
             }
 
             // 读取邮件正文，类型为html
-            if (is_content_text && content_type.equals("text/html") && !has_plain_content) {
-                if (!get_content) {
-                    get_content = true;
-                } else {
-                    content += line;
-                }
+            if (is_content_text && get_content && content_type.equals("text/html") && !has_plain_content) {
+                content += line;
             }
 
             // 读取邮件附件
-            if (is_attachment_text && content_type.equals("attachment")) {
-                if (!get_content) {
-                    get_content = true;
-                } else {
-                    try {
-                        attachment_out.write(CoderUtil.decode_byte(line));
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+            if (is_attachment_text && get_content && content_type.equals("attachment")) {
+                try {
+                    attachment_out.write(CoderUtil.decode_byte(line));
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
+            }
+
+            // 判断是否到了正文
+            if (line.equals("")) {
+                get_content = true;
             }
         }
         if (!has_plain_content) {
