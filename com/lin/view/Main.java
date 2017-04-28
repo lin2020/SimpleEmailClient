@@ -32,6 +32,7 @@ import javafx.scene.effect.BoxBlur;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import java.io.*;
+import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 
 import com.lin.database.*;
 import com.lin.model.*;
@@ -43,6 +44,8 @@ public class Main extends Application {
     // database
     private List<User> users;
     private List<Email> emails;
+    private Integer currentUserId = -1;
+    private String currentEmailBox = "";
     private EmailClientDB emailClientDB;
     private String[] boxName = {"收件箱", "发件箱", "草稿箱", "垃圾箱"};
     private final Desktop desktop = Desktop.getDesktop();
@@ -73,6 +76,7 @@ public class Main extends Application {
     private ListView<Email> listView;
     private ObservableList<Email> listData;
     // content pane
+    private ScrollPane scrollPane;
     private VBox contentBox;
     private HBox topBox;
     private Label subjectLabel;
@@ -94,6 +98,7 @@ public class Main extends Application {
     private HBox refwBox;
     private Button reButton;
     private Button fwButton;
+    private Button downloadButton;
     private FlowPane attachmentsBox;
 
     @Override
@@ -141,7 +146,7 @@ public class Main extends Application {
 
         // ** split pane
         splitPane = new SplitPane();
-        splitPane.setDividerPositions(0.25, 0.5);
+        splitPane.setDividerPositions(0.22, 0.5);
 
         // *** userBox
         userBox = new VBox();
@@ -250,6 +255,13 @@ public class Main extends Application {
         refwBox.getChildren().addAll(reButton, fwButton);
         contentBox.getChildren().add(refwBox);
 
+        // download detail email
+        Image downloadImage = new Image(getClass().getResourceAsStream("下载.png"));
+        downloadButton = new Button("下载", new ImageView(downloadImage));
+        downloadButton.setAlignment(Pos.CENTER);
+        contentBox.getChildren().add(downloadButton);
+        downloadButton.setVisible(false);
+
         // attachments box
         attachmentsBox = new FlowPane();
         attachmentsBox.setPadding(new Insets(8, 8, 8, 8));
@@ -266,7 +278,12 @@ public class Main extends Application {
         contentBox.getChildren().add(attachmentsBox);
         contentBox.setVisible(false);
 
-        splitPane.getItems().addAll(userBox, emailBox, contentBox);
+        scrollPane = new ScrollPane();
+        scrollPane.setPrefHeight(500);
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setContent(contentBox);
+
+        splitPane.getItems().addAll(userBox, emailBox, scrollPane);
         VBox.setVgrow(splitPane, Priority.ALWAYS);
 
         // add menuBar and splitPane to root pane
@@ -303,6 +320,7 @@ public class Main extends Application {
                 protected void succeeded() {
                     super.succeeded();
                     progressDialog.getCancelButton().setText("结束");
+                    refreshEmailList();
                 }
 
                 @Override
@@ -392,6 +410,7 @@ public class Main extends Application {
                                 protected void succeeded() {
                                     super.succeeded();
                                     progressDialog.getCancelButton().setText("结束");
+                                    refreshEmailList();
                                 }
 
                                 @Override
@@ -571,27 +590,11 @@ public class Main extends Application {
                         LogUtil.i("can't find user");
                     } else {
                         LogUtil.i("find user");
-                        emails = emailClientDB.loadEmails(user.getId(), treeItemValue);
+                        currentUserId = user.getId();
+                        currentEmailBox = treeItemValue;
                     }
                 }
-                Collections.sort(emails, new Comparator<Email>() {
-                    public int compare(Email email0, Email email1) {
-                        SimpleDateFormat df_old = new SimpleDateFormat("EE, dd MMM yyyy hh:mm:ss Z", Locale.US);  //原来日期格式
-                        SimpleDateFormat df_new = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.US);  //新的日期格式
-                        String d0 = "";
-                        String d1 = "";
-                        try {
-                            d0 = df_new.format(df_old.parse(email0.getDate()));
-                            d1 = df_new.format(df_old.parse(email1.getDate()));
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        return d1.compareTo(d0);
-                    }
-                });
-                listData = FXCollections.observableArrayList(emails);
-                listView.setItems(listData);
-                listView.setCellFactory((ListView<Email> l) -> new MyListCell());
+                refreshEmailList();
                 contentBox.setVisible(false);
             }
         });
@@ -599,157 +602,12 @@ public class Main extends Application {
         // 显示邮件
         listView.getSelectionModel().selectedItemProperty().addListener(
         (ObservableValue<? extends Email> ov, Email old_val, Email new_val) -> {
-            LogUtil.i("happen");
             Email email = listView.getSelectionModel().getSelectedItem();
             if (email == null) {
                 return ;
             }
-            if (email.getContent().equals("onlyDownloadTop")) {
-                for (User user : users) {
-                    if (user.getId() == email.getUserid()) {
-                        LogUtil.i("download email detail");
-                        ProgressDialog progressDialog = new ProgressDialog(email.getSubject());
-                        Task<Void> progressTask = new Task<Void>(){
-
-                            @Override
-                            protected void succeeded() {
-                                super.succeeded();
-                                progressDialog.getCancelButton().setText("结束");
-                                if (email.getAttachment_num() != 0) {
-                                    attachmentLabel.setText("" + email.getAttachment_num());
-                                    String attachments_path = "C:\\SimpleEmailClient\\attachments\\";
-                                    for (String s : email.getAttachment_list()) {
-                                        Image image = new Image(getClass().getResourceAsStream("附件_2.png"));
-                                        Label label = new Label(s, new ImageView(image));
-                                        label.setFont(new Font("Arial", 14));
-                                        label.setOnMouseClicked((MouseEvent me)->{
-                                            File file = new File(attachments_path + s);
-                                            if (file != null) {
-                                                try {
-                                                    desktop.open(file);
-                                                } catch (Exception e) {
-                                                    new CommonDialog("提示", "文件已被删除");
-                                                    e.printStackTrace();
-                                                }
-                                            } else {
-                                                new CommonDialog("提示", "文件已被删除");
-                                            }
-                                        });
-                                        attachmentsBox.getChildren().add(label);
-                                    }
-                                }
-                                contentLabel.setText(email.getContent());
-                            }
-
-                            @Override
-                            protected Void call() throws Exception {
-                                PopUtil.sendRetrRequest(user, email, new PopCallbackListener() {
-                                    @Override
-                                    public void onConnect() {
-                                        LogUtil.i("on connect");
-                                        updateTitle("正在连接");
-                                        updateMessage("");
-                                    }
-
-                                    @Override
-                                    public void onCheck() {
-                                        LogUtil.i("on check");
-                                        updateTitle("正在检查");
-                                        updateMessage("");
-                                    }
-
-                                    // 下载邮件
-                                    @Override
-                                    public void onDownLoad(long total_email_size, long download_email_size,
-                                                           int total_email_count, int download_email_count,
-                                                           long current_email_size, long current_download_size) {
-                                        LogUtil.i("on download");
-                                        updateProgress(current_download_size, current_email_size);
-                                        updateTitle("正在下载");
-                                        if (current_email_size > 1024) {
-                                            updateMessage("待下载: " + current_email_size / (1024) + "KB  已下载: " + current_download_size / (1024) + "KB");
-                                        } else {
-                                            updateMessage("待下载: " + current_email_size + "B  已下载: " + current_download_size + "B");
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onFinish() {
-                                        LogUtil.i("on finish");
-                                        updateProgress(100, 100);
-                                        updateTitle("下载完成");
-                                    }
-
-                                    @Override
-                                    public void onError() {
-                                        LogUtil.i("on error");
-                                        updateTitle("下载失败");
-                                    }
-
-                                    @Override
-                                    public boolean onCancel() {
-                                        LogUtil.i("on cancel");
-                                        if (progressDialog.getCancel() == true) {
-                                            updateTitle("下载取消");
-                                        }
-                                        return progressDialog.getCancel();
-                                    }
-                                });
-                                return null;
-                            }
-                        };
-                        progressDialog.getProgress().progressProperty().bind(progressTask.progressProperty());
-                        progressDialog.getMessageLabel().textProperty().bind(progressTask.messageProperty());
-                        progressDialog.getTitleLabel().textProperty().bind(progressTask.titleProperty());
-                        new Thread(progressTask).start();
-                    }
-                }
-            }
             subjectLabel.setText(email.getSubject());
             fromText.setText(email.getFrom());
-            if (email.getAttachment_num() != 0) {
-                if (email.getAttachment_num() == -1) {
-                    attachmentLabel.setText("");
-                } else {
-                    attachmentLabel.setText("" + email.getAttachment_num());
-                }
-                attachmentBox.setVisible(true);
-                contentBox.getChildren().remove(attachmentsBox);
-                attachmentsBox = new FlowPane();
-                attachmentsBox.setPadding(new Insets(8, 8, 8, 8));
-                // attachmentsBox.setSpacing(12);
-                attachmentsBox.setVgap(8);
-                attachmentsBox.setHgap(16);
-                attachmentsBox.setAlignment(Pos.BOTTOM_LEFT);
-                attachmentsBox.setVisible(false);
-                VBox.setVgrow(attachmentsBox, Priority.ALWAYS);
-                contentBox.getChildren().add(attachmentsBox);
-                attachmentsBox.setVisible(true);
-                String attachments_path = "C:\\SimpleEmailClient\\attachments\\";
-                for (String s : email.getAttachment_list()) {
-                    Image image = new Image(getClass().getResourceAsStream("附件_2.png"));
-                    Label label = new Label(s, new ImageView(image));
-                    label.setFont(new Font("Arial", 14));
-                    label.setOnMouseClicked((MouseEvent me)->{
-                        File file = new File(attachments_path + s);
-                        if (file != null) {
-                            try {
-                                desktop.open(file);
-                            } catch (Exception e) {
-                                new CommonDialog("提示", "文件已被删除");
-                                e.printStackTrace();
-                            }
-                        } else {
-                            new CommonDialog("提示", "文件已被删除");
-                        }
-                    });
-                    attachmentsBox.getChildren().add(label);
-                }
-            } else {
-                attachmentLabel.setText("");
-                attachmentBox.setVisible(false);
-                attachmentsBox.setVisible(false);
-            }
             String to = "";
             for (String s : email.getTo_list()) {
                 to += s + ";";
@@ -769,7 +627,12 @@ public class Main extends Application {
                 e.printStackTrace();
             }
             dateText.setText(date);
-            contentLabel.setText(email.getContent());
+            if (email.getContent().equals("onlyDownloadTop")) {
+                contentLabel.setText("");
+            } else {
+                contentLabel.setText(email.getContent());
+            }
+            refreshEmailDetail(email);
             contentBox.setVisible(true);
         });
 
@@ -837,6 +700,94 @@ public class Main extends Application {
             new EmailEdit(df.format(new Date()).toString(), email, "转发: ", "txt");
         });
 
+        // 下载正文
+        downloadButton.setOnAction((ActionEvent ae)->{
+            LogUtil.i("happen");
+            Email email = listView.getSelectionModel().getSelectedItem();
+            if (email == null) {
+                return ;
+            }
+            if (email.getContent().equals("onlyDownloadTop")) {
+                for (User user : users) {
+                    if (user.getId() == email.getUserid()) {
+                        LogUtil.i("download email detail");
+                        ProgressDialog progressDialog = new ProgressDialog(email.getSubject());
+                        Task<Void> progressTask = new Task<Void>(){
+
+                            @Override
+                            protected void succeeded() {
+                                super.succeeded();
+                                progressDialog.getCancelButton().setText("结束");
+                                refreshEmailList();
+                                refreshEmailDetail(email);
+                            }
+
+                            @Override
+                            protected Void call() throws Exception {
+                                PopUtil.sendRetrRequest(user, email, new PopCallbackListener() {
+                                    @Override
+                                    public void onConnect() {
+                                        LogUtil.i("on connect");
+                                        updateTitle("正在连接");
+                                        updateMessage("");
+                                    }
+
+                                    @Override
+                                    public void onCheck() {
+                                        LogUtil.i("on check");
+                                        updateTitle("正在检查");
+                                        updateMessage("");
+                                    }
+
+                                    // 下载邮件
+                                    @Override
+                                    public void onDownLoad(long total_email_size, long download_email_size,
+                                                           int total_email_count, int download_email_count,
+                                                           long current_email_size, long current_download_size) {
+                                        LogUtil.i("on download");
+                                        updateProgress(current_download_size, current_email_size);
+                                        updateTitle("正在下载");
+                                        if (current_email_size > 1024) {
+                                            updateMessage("待下载: " + current_email_size / (1024) + "KB  已下载: " + current_download_size / (1024) + "KB");
+                                        } else {
+                                            updateMessage("待下载: " + current_email_size + "B  已下载: " + current_download_size + "B");
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onFinish() {
+                                        LogUtil.i("on finish");
+                                        updateProgress(100, 100);
+                                        updateTitle("下载完成");
+                                    }
+
+                                    @Override
+                                    public void onError() {
+                                        LogUtil.i("on error");
+                                        updateTitle("下载失败");
+                                    }
+
+                                    @Override
+                                    public boolean onCancel() {
+                                        LogUtil.i("on cancel");
+                                        if (progressDialog.getCancel() == true) {
+                                            updateTitle("下载取消");
+                                        }
+                                        return progressDialog.getCancel();
+                                    }
+                                });
+                                return null;
+                            }
+                        };
+                        progressDialog.getProgress().progressProperty().bind(progressTask.progressProperty());
+                        progressDialog.getMessageLabel().textProperty().bind(progressTask.messageProperty());
+                        progressDialog.getTitleLabel().textProperty().bind(progressTask.titleProperty());
+                        new Thread(progressTask).start();
+                    }
+                }
+            }
+        });
+
         // 查看附件
         attachmentLabel.setOnMouseClicked((MouseEvent me)->{
             FileChooser fileChooser = new FileChooser();
@@ -852,52 +803,137 @@ public class Main extends Application {
                 }
             }
         });
+
+    }
+
+    // 刷新邮件列表
+    private void refreshEmailList() {
+        emails = emailClientDB.loadEmails(currentUserId, currentEmailBox);
+        Collections.sort(emails, new Comparator<Email>() {
+            public int compare(Email email0, Email email1) {
+                SimpleDateFormat df_old = new SimpleDateFormat("EE, dd MMM yyyy hh:mm:ss Z", Locale.US);  //原来日期格式
+                SimpleDateFormat df_new = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.US);  //新的日期格式
+                String d0 = "";
+                String d1 = "";
+                try {
+                    d0 = df_new.format(df_old.parse(email0.getDate()));
+                    d1 = df_new.format(df_old.parse(email1.getDate()));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return d1.compareTo(d0);
+            }
+        });
+        listData = FXCollections.observableArrayList(emails);
+        listView.setItems(listData);
+        listView.setCellFactory((ListView<Email> l) -> new MyListCell());
+    }
+
+    // 刷新邮件内容
+    private void refreshEmailDetail(Email email) {
+        if (email.getContent().equals("onlyDownloadTop")) {
+            contentLabel.setText("");
+            separator3.setVisible(false);
+            refwBox.setVisible(false);
+            attachmentsBox.setVisible(false);
+            downloadButton.setVisible(true);
+        } else {
+            contentLabel.setText(email.getContent());
+            separator3.setVisible(true);
+            refwBox.setVisible(true);
+            attachmentsBox.setVisible(true);
+            downloadButton.setVisible(false);
+            if (email.getAttachment_num() != 0) {
+                if (email.getAttachment_num() == -1) {
+                    attachmentLabel.setText("");
+                } else {
+                    attachmentLabel.setText("" + email.getAttachment_num());
+                }
+                attachmentBox.setVisible(true);
+                contentBox.getChildren().remove(attachmentsBox);
+                attachmentsBox = new FlowPane();
+                attachmentsBox.setPadding(new Insets(8, 8, 8, 8));
+                // attachmentsBox.setSpacing(12);
+                attachmentsBox.setVgap(8);
+                attachmentsBox.setHgap(16);
+                attachmentsBox.setAlignment(Pos.BOTTOM_LEFT);
+                attachmentsBox.setVisible(false);
+                VBox.setVgrow(attachmentsBox, Priority.ALWAYS);
+                contentBox.getChildren().add(attachmentsBox);
+                attachmentsBox.setVisible(true);
+                String attachments_path = "C:\\SimpleEmailClient\\attachments\\";
+                for (String s : email.getAttachment_list()) {
+                    Image image = new Image(getClass().getResourceAsStream("附件_2.png"));
+                    Label label = new Label(s, new ImageView(image));
+                    label.setFont(new Font("Arial", 14));
+                    label.setOnMouseClicked((MouseEvent me)->{
+                        File file = new File(attachments_path + s);
+                        if (file != null) {
+                            try {
+                                desktop.open(file);
+                            } catch (Exception e) {
+                                new CommonDialog("提示", "文件已被删除");
+                                e.printStackTrace();
+                            }
+                        } else {
+                            new CommonDialog("提示", "文件已被删除");
+                        }
+                    });
+                    attachmentsBox.getChildren().add(label);
+                }
+            } else {
+                attachmentLabel.setText("");
+                attachmentBox.setVisible(false);
+                attachmentsBox.setVisible(false);
+            }
+        }
     }
 
     // 定义邮件列表的显示格式
     class MyListCell extends ListCell<Email> {
-       @Override
-       public void updateItem(Email item, boolean empty) {
-           super.updateItem(item, empty);
-           if (item != null) {
-               SimpleDateFormat df_old = new SimpleDateFormat("EE, dd MMM yyyy hh:mm:ss Z", Locale.US);  //原来日期格式
-               SimpleDateFormat df_new = new SimpleDateFormat("MM-dd", Locale.US);  //新的日期格式
 
-               String from = item.getFrom();
-               String date = item.getDate();
-               String subject = item.getSubject();
+        @Override
+        public void updateItem(Email item, boolean empty) {
+            super.updateItem(item, empty);
+            if (item != null) {
+            SimpleDateFormat df_old = new SimpleDateFormat("EE, dd MMM yyyy hh:mm:ss Z", Locale.US);  //原来日期格式
+            SimpleDateFormat df_new = new SimpleDateFormat("MM-dd", Locale.US);  //新的日期格式
 
-               from = from.split("@")[0];
+            String from = item.getFrom();
+            String date = item.getDate();
+            String subject = item.getSubject();
 
-               try {
-                   date = df_new.format(df_old.parse(item.getDate()));
-               } catch (Exception e) {
-                   e.printStackTrace();
-               }
+            from = from.split("@")[0];
 
-               VBox root = new VBox();
-               root.setSpacing(4);
-               HBox hbox = new HBox();
-               Label fromLabel = new Label(from);
-               if (item.getAttachment_num() != 0) {
-                   Image image = new Image(getClass().getResourceAsStream("附件_1.png"));
-                   fromLabel.setGraphic(new ImageView(image));
-                   fromLabel.setContentDisplay(ContentDisplay.RIGHT);
-               }
-               // fromLabel.setFont(new Font("System Bold", 16));
-               fromLabel.setFont(new Font("Lucida Bright Demibold Italic", 16));
-               fromLabel.setPrefWidth(140);
-               Label dateLabel = new Label(date);
-               dateLabel.setFont(new Font(16));
-               dateLabel.setPrefWidth(80);
-               hbox.getChildren().addAll(fromLabel, dateLabel);
-               Label subjectLabel = new Label(subject);
-               subjectLabel.setFont(new Font(14));
-               root.getChildren().add(hbox);
-               root.getChildren().add(subjectLabel);
-               setGraphic(root);
-           }
-       }
+            try {
+               date = df_new.format(df_old.parse(item.getDate()));
+            } catch (Exception e) {
+               e.printStackTrace();
+            }
+
+            VBox root = new VBox();
+            root.setSpacing(4);
+            HBox hbox = new HBox();
+            Label fromLabel = new Label(from);
+            if (item.getAttachment_num() != 0) {
+               Image image = new Image(getClass().getResourceAsStream("附件_1.png"));
+               fromLabel.setGraphic(new ImageView(image));
+               fromLabel.setContentDisplay(ContentDisplay.RIGHT);
+            }
+            // fromLabel.setFont(new Font("System Bold", 16));
+            fromLabel.setFont(new Font("Lucida Bright Demibold Italic", 16));
+            fromLabel.setPrefWidth(160);
+            Label dateLabel = new Label(date);
+            dateLabel.setFont(new Font(16));
+            dateLabel.setPrefWidth(80);
+            hbox.getChildren().addAll(fromLabel, dateLabel);
+            Label subjectLabel = new Label(subject);
+            subjectLabel.setFont(new Font(14));
+            root.getChildren().add(hbox);
+            root.getChildren().add(subjectLabel);
+            setGraphic(root);
+            }
+        }
     }
 
 }

@@ -229,7 +229,6 @@ public class PopUtil {
                         return false;
                     }
                 }
-                download_email_count++;
                 current_email_size = data_map.get(key);
                 current_download_size = 0;
                 // 读取服务器返回的邮件信息
@@ -243,6 +242,8 @@ public class PopUtil {
                     LogUtil.i("S: " + response);
                     if (".".equals(response)) {
                         flag = false;
+                        download_email_count++;
+                        listener.onDownLoad(total_email_size, download_email_size, total_email_count, download_email_count, current_email_size, current_download_size);
                     } else {
                         lines.addElement(response);
                         current_download_size += response.length() + 1;
